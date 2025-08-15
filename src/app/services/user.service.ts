@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { User } from '../models/user';
 import { environment } from '../../environments/environment';
 
@@ -21,13 +23,16 @@ export class UserService {
   }
 
   /**
-   *  Registers a new user.
-   * @param user 
-   * * This method registers a new user by sending a POST request to the API.
-   * It expects a User object as input and returns an Observable of the User type.
-   * @returns 
+   * Registers a new user.
+   * @param user - The user to register.
+   * @returns An Observable of the registered User.
    */
-  registrer(user:User) {
-    return this.http.post<User>(`${this.apiUrl}`, user);
+  register(user: User): Observable<User> {
+    return this.http.post<User>(`${this.apiUrl}/register`, user).pipe(
+      catchError((err) => {
+        // Ici tu peux renvoyer l'erreur pour le composant
+          return throwError(() => err);
+      })
+    );
   }
 }
