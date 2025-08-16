@@ -28,7 +28,7 @@ export class UserService {
    * @returns An Observable of the registered User.
    */
   register(user: User): Observable<User> {
-    return this.http.post<User>(`${this.apiUrl}/register`, user).pipe(
+    return this.http.post<User>(this.apiUrl, user).pipe(
       catchError((err) => {
         // Ici tu peux renvoyer l'erreur pour le composant
           return throwError(() => err);

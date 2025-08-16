@@ -1,7 +1,7 @@
 export class User {
 
   email?: string
-  password?: string
+  plainPassword?: string
   confirmPassword?:string
   firstname?: string
   lastname?: string
@@ -9,15 +9,15 @@ export class User {
   /**
    * 
    * @param email 
-   * @param password 
+   * @param plainPassword 
    * @param confirmPassword 
    * @param firstname 
    * @param lastname 
    */
-  constructor(email:string , password:string,confirmPassword:string, firstname:string ,lastname:string) {
+  constructor(email:string , plainPassword:string,confirmPassword:string, firstname:string ,lastname:string) {
 
     this.email = email;
-    this.password = password;
+    this.plainPassword = plainPassword;
     this.confirmPassword = confirmPassword ;
     this.firstname = firstname;
     this.lastname = lastname;
