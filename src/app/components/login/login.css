@@ -1,11 +1,7 @@
-.text-center {
+h1, a {
+  padding-top: 50px;
   text-align: center;
 }
-
-.padding-top-50 {
-  padding-top: 50px;
-}
-
 
 form {
   padding: 50px;

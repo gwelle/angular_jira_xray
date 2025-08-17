@@ -1,4 +1,4 @@
-<h1>Registration</h1>
+<h1 class="text-center padding-top-50">Registration</h1>
 
 <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
 
@@ -47,6 +47,11 @@
         }  
     </div>
 
-    <button type="submit" class="btn btn-primary">Valider</button>
+    <button type="submit" class="btn btn-primary">Valider</button><br /><br />
+    <a routerLink="/login" class="text-primary text-decoration-none text-center">
+        Déjà un compte ? Se connecter
+    </a>
 </form>
+
+
 

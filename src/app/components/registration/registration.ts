@@ -3,6 +3,7 @@ import { ReactiveFormsModule, FormGroup, Validators, FormBuilder } from '@angula
 import { UserService } from '../../services/user.service';
 import { getErrorMessage } from '../../utils/form-errors';
 import { Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -10,9 +11,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 @Component({
   selector: 'app-registration',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
-  templateUrl: './registration.html',
-  styleUrl: './registration.css'
+  imports: [ReactiveFormsModule, CommonModule, RouterModule],
+  templateUrl: './registration.html'
 })
 export class Registration {
 
@@ -66,9 +66,8 @@ export class Registration {
       // Call the user service to register the user
       this.userService.register(user).subscribe({
         next: (response) => {
-          console.log('User registered successfully:', response);
           // Navigate to the login page
-          //this.router.navigate(['/login']);
+          this.router.navigate(['/login']);
         },
         error: (err: HttpErrorResponse | any) => {
           if (err.status === 422 && err.error.violations) {
