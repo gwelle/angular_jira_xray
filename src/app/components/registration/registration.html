@@ -3,21 +3,50 @@
 <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
 
     <label for="email">Email</label>
-    <input type="email" id="email" formControlName="email">
+    <input type="email" id="email" formControlName="email" 
+    [ngClass]="{ 'is-invalid': isInvalid('email') }">
+    <div class="invalid-feedback">
+        @if(hasError('email')){
+            {{ getErrorMessage('email') }}
+        }  
+    </div>
 
     <label for="plain-password">Plain Password</label>
-    <input type="password" id="plain-password" formControlName="plainPassword">
+    <input type="password" id="plain-password" formControlName="plainPassword"
+    [ngClass]="{ 'is-invalid': isInvalid('plainPassword') }">
+    <div class="invalid-feedback">
+        @if(hasError('plainPassword')){
+            {{ getErrorMessage('plainPassword') }}
+        }  
+    </div>
 
     <label for="confirm-password">Confirmation Password</label>
-    <input type="password" id="confirm-password" formControlName="confirmPassword">
+    <input type="password" id="confirm-password" formControlName="confirmPassword"
+    [ngClass]="{ 'is-invalid': isInvalid('confirmPassword') }">
+    <div class="invalid-feedback">
+        @if(hasError('confirmPassword')){
+            {{ getErrorMessage('confirmPassword') }}
+        }  
+    </div>
 
     <label for="first-name">First Name</label>
-    <input type="text" id="first-name" formControlName="firstName">
+    <input type="text" id="first-name" formControlName="firstName"
+    [ngClass]="{ 'is-invalid': isInvalid('firstName') }">
+    <div class="invalid-feedback">
+        @if(hasError('firstName')){
+            {{ getErrorMessage('firstName') }}
+        }  
+    </div>
 
     <label for="last-name">Last Name</label>
-    <input type="text" id="last-name" formControlName="lastName">
+    <input type="text" id="last-name" formControlName="lastName"
+    [ngClass]="{ 'is-invalid': isInvalid('lastName') }">
+    <div class="invalid-feedback">
+        @if(hasError('lastName')){
+            {{ getErrorMessage('lastName') }}
+        }  
+    </div>
 
     <button type="submit" class="btn btn-primary">Valider</button>
 </form>
 
-<pre>{{ registrationForm.value | json }}</pre>
