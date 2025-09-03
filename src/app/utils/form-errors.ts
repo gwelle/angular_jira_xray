@@ -11,12 +11,8 @@ export function getErrorMessage(form: FormGroup, controlName: string) {
   const control = form.get(controlName);
   if (!control?.errors) return '';
 
-  // Cas spécial pour la confirmation du mot de passe
-  if (controlName === 'confirmPassword') {
-    const passwordControl = form.get('plainPassword');
-    if (passwordControl && passwordControl.value !== control.value) {
-      return 'Les mots de passe ne correspondent pas';
-    }
+  if (control.errors['passwordMismatch']) {
+    return 'Les mots de passe ne correspondent pas';
   }
 
   if (control.errors['alreadyExists']) {
@@ -44,8 +40,8 @@ export function getErrorMessage(form: FormGroup, controlName: string) {
       email: 'L\'adresse Email est invalide',
       plainPassword: 'Le mot de passe doit contenir au moins une lettre majuscule, une minuscule, un chiffre et un caractère spécial.',
       confirmPassword: 'Le mot de passe de confirmation doit contenir au moins une lettre majuscule, une minuscule, un chiffre et un caractère spécial.',
-      firstName: 'Le prénom ne doit contenir que des lettres',
-      lastName: 'Le nom ne doit contenir que des lettres',
+      firstName: 'Le prénom doit contenir uniquement des lettres, espaces, tirets ou apostrophes correctement placés.',
+      lastName: 'Le nom doit contenir uniquement des lettres, espaces, tirets ou apostrophes correctement placés.',
     }
   };
 

@@ -3,15 +3,15 @@ import { ReactiveFormsModule, FormGroup, Validators, FormBuilder } from '@angula
 import { UserService } from '../../services/user.service';
 import { getErrorMessage } from '../../utils/form-errors';
 import { Router } from '@angular/router';
-import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
+import { PasswordMatchValidator } from '../../utils/password-match.validator';
 
 
 @Component({
   selector: 'app-registration',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule],
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './registration.html'
 })
 export class Registration {
@@ -36,9 +36,9 @@ export class Registration {
          Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,15}$/)]],
       confirmPassword: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(15),
          Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,15}$/)]],
-      firstName: ['', [Validators.required, Validators.pattern(/^[A-Za-z]+$/)]],
-      lastName: ['', [Validators.required, Validators.pattern(/^[A-Za-z]+$/)]],
-    });
+      firstName: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/)]],
+      lastName: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/)]]
+    },{ validators: PasswordMatchValidator });
   }
 
   /**
@@ -69,7 +69,7 @@ export class Registration {
           // Navigate to the login page
           this.router.navigate(['/login']);
         },
-        error: (err: HttpErrorResponse | any) => {
+        error: (err: HttpErrorResponse) => {
           if (err.status === 422 && err.error.violations) {
             const emailViolation = err.error.violations.find((v: any) => v.propertyPath === 'email');
             if (emailViolation) {
@@ -102,7 +102,7 @@ export class Registration {
    */
   isInvalid(controlName: string): boolean {
     const control = this.registrationForm.get(controlName);
-    return this.submitted && control?.errors ? true : false;
+    return !!(this.submitted && control?.errors);
   }
 
   /**
@@ -115,3 +115,4 @@ export class Registration {
     return this.submitted && !!control?.errors;
   }
 }
+
