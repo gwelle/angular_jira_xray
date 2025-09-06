@@ -1,3 +1,17 @@
+
+
+<ng-container *ngIf="activationMessage as message; else noMessage">
+  <div [ngClass]="{
+        'alert-success': message.includes('succès'), 
+        'alert-danger': !message.includes('succès')
+      }"
+       class="alert mt-3">
+    {{ message }}
+  </div>
+</ng-container>
+
+<ng-template #noMessage></ng-template>
+
 <h1 class="text-center padding-top-50">Login</h1>
 
 <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
