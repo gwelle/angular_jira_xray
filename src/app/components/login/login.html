@@ -1,11 +1,7 @@
 
 
 <ng-container *ngIf="activationMessage as message; else noMessage">
-  <div [ngClass]="{
-        'alert-success': message.includes('succès'), 
-        'alert-danger': !message.includes('succès')
-      }"
-       class="alert mt-3">
+  <div [ngClass]="getAlertClass(message)" class="alert mt-3">
     {{ message }}
   </div>
 </ng-container>
