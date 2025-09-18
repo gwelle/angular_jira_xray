@@ -2,7 +2,13 @@
 
 <ng-container *ngIf="activationMessage as message; else noMessage">
   <div [ngClass]="getAlertClass(message)" class="alert mt-3">
-    {{ message }}
+    <ng-container *ngIf="showResendActivationLink; else noShowLink">
+      
+    </ng-container>
+    <ng-template #noShowLink>
+       {{ message }} <a (click)="resendActivationLink()">Renvoyer le lien d'activation</a>
+    </ng-template>
+     {{ message }} 
   </div>
 </ng-container>
 

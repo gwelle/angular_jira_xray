@@ -38,16 +38,22 @@ export class Login implements OnInit {
     // Check for activation message in query params (e.g., after account activation)
     this.route.queryParams.subscribe(params => {
       if (params['activated'] === '1') {
-        if(params['existing'] === 'true') {
+        if(params['info'] === 'already_activated') {
           this.activationMessage = 'Votre compte est déjà activé. Vous pouvez vous connecter.';
-          return;
+        } 
+        else {
+          this.activationMessage = 'Votre compte a été activé avec succès ! Vous pouvez vous connecter.';
         }
-        this.activationMessage = 'Votre compte a été activé avec succès ! Vous pouvez vous connecter.';
       } 
+
       else if (params['activated'] === '0') {
         if (params['error'] === 'token_expired') {
-          this.activationMessage = "Le lien d'activation est invalide ou expiré.";
+          this.activationMessage = "Votre lien d'activation est invalide. Veuillez demander un nouveau lien d'activation.";
         } 
+        else if (params['error'] === 'invalid_token') {
+          this.activationMessage = "Votre lien d'activation n'est plus valide, car vous avez déjà activé votre compte.";
+
+        }
         else {
           this.activationMessage = 'Impossible d’activer votre compte.';
         }
@@ -61,15 +67,16 @@ export class Login implements OnInit {
    * @returns The CSS class for the alert
    */
   getAlertClass(message: string): string {
-    if (message.includes('déjà activé')) {
+    if (message.includes('est déjà activé')) {
       return 'alert-warning';
     }
     if (message.includes('succès')) {
       return 'alert-success';
     }
     return 'alert-danger';
-}
+  }
 
+  
 
   /**
    * Handle form submission
