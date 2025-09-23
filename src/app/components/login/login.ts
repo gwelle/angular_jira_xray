@@ -14,6 +14,7 @@ export class Login implements OnInit {
   // Define any properties or methods needed for login
   loginForm: FormGroup;
   activationMessage: string | null = null;
+  isResending: boolean = false;
 
   /*
    * Constructor for the Login component
@@ -47,15 +48,23 @@ export class Login implements OnInit {
       } 
 
       else if (params['activated'] === '0') {
-        if (params['error'] === 'token_expired') {
-          this.activationMessage = "Votre lien d'activation est invalide. Veuillez demander un nouveau lien d'activation.";
-        } 
-        else if (params['error'] === 'invalid_token') {
-          this.activationMessage = "Votre lien d'activation n'est plus valide, car vous avez déjà activé votre compte.";
+        const error = params['error'];
 
+        if (error === 'token_expired') {
+          this.activationMessage = "Votre lien d'activation n'est plus valide. Un nouveau email vous a été renvoyé.";
+        } 
+        else if (error === 'invalid_token') {
+          this.activationMessage = "Ce lien d’activation est invalide. Veuillez demander un nouveau lien.";
+          this.isResending = true;
         }
+        else if(error === 'max_resend_reached') {
+          this.activationMessage = "Vous avez atteint le nombre maximum de demandes de renvoi. Veuillez réessayer plus tard.";
+        }
+        else if (error === 'user_not_found') {
+          this.activationMessage = "Aucun compte n'est associé à cet email.";
+        } 
         else {
-          this.activationMessage = 'Impossible d’activer votre compte.';
+          this.activationMessage = 'Impossible d’activer votre compte. Veuillez réessayer plus tard.';
         }
       }
     });
@@ -67,16 +76,15 @@ export class Login implements OnInit {
    * @returns The CSS class for the alert
    */
   getAlertClass(message: string): string {
-    if (message.includes('est déjà activé')) {
+    if (message.includes('est déjà activé') || message.includes('demandes de renvoi')) {
       return 'alert-warning';
     }
-    if (message.includes('succès')) {
+    else if (message.includes('succès')) {
       return 'alert-success';
     }
+  
     return 'alert-danger';
   }
-
-  
 
   /**
    * Handle form submission
