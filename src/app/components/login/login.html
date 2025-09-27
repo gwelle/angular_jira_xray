@@ -1,15 +1,15 @@
 
 
-<ng-container *ngIf="activationMessage as message; else noMessage">
-  <div [ngClass]="getAlertClass(message)" class="alert mt-3">
-    <!-- [innerHTML] permet de mettre du HTML directement dans la chaîne, ici pour le lien <a> -->
-     <span [innerHTML]="isResending 
-     ? message + ' <a href=\'/resend-link\'>Cliquez ici</a>' : message">
-  </span>
+@if (activationMessage) {
+  <div [ngClass]="getAlertClass(activationMessage)" class="alert mt-3">
+    {{ activationMessage }}
+    @if (isResending) {
+      &nbsp;<a routerLink="/resend_confirmation">Cliquez ici</a>
+    }
   </div>
-</ng-container>
-
-<ng-template #noMessage></ng-template>
+} @else {
+  <!-- rien à afficher si pas de message -->
+}
 
 <h1 class="text-center padding-top-50">Login</h1>
 

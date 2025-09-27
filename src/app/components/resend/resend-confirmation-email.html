@@ -1,0 +1,15 @@
+<h1 class="text-center padding-top-50">Resend Confirmation Email</h1>
+
+<form [formGroup]="resendForm" (ngSubmit)="onSubmit()">
+
+    <label for="email">Email</label>
+    <input type="email" id="email" formControlName="email" 
+    [ngClass]="{ 'is-invalid': isInvalid('email') }">
+    <div class="invalid-feedback">
+        @if(hasError('email')){
+            {{ getErrorMessage('email') }}
+        }  
+    </div>
+
+    <button type="submit" class="btn btn-primary">Valider</button>
+</form>

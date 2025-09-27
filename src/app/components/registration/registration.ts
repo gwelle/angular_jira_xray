@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, Validators, FormBuilder } from '@angular/forms';
 import { UserService } from '../../services/user.service';
-import { getErrorMessage } from '../../utils/form-errors';
+import { FormHelperService } from '../../services/form-helper.service';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { PasswordMatchValidator } from '../../utils/password-match.validator';
 
 
 @Component({
@@ -24,10 +23,13 @@ export class Registration {
   /**
    * constructor
    * @param userService
+   * @param FormHelperService
    * @param fb
    * @param router
    */
-  constructor(private readonly userService: UserService, private readonly fb: FormBuilder, 
+  constructor(private readonly userService: UserService, 
+    private readonly formHelperService : FormHelperService,
+    private readonly fb: FormBuilder, 
     private readonly router: Router) {
     this.registrationForm = this.fb.group({
       email: ['', [Validators.required,
@@ -38,7 +40,7 @@ export class Registration {
          Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,15}$/)]],
       firstName: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/)]],
       lastName: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/)]]
-    },{ validators: PasswordMatchValidator });
+    },{ validators: this.formHelperService.PasswordMatchValidator });
   }
 
   /**
@@ -92,7 +94,7 @@ export class Registration {
    * @returns Error message string
    */
   getErrorMessage(controlName: string) {
-    return getErrorMessage(this.registrationForm, controlName);
+    return this.formHelperService.getErrorMessage(this.registrationForm, controlName);
   }
 
   /**
@@ -101,8 +103,7 @@ export class Registration {
    * @returns boolean indicating if the control is invalid
    */
   isInvalid(controlName: string): boolean {
-    const control = this.registrationForm.get(controlName);
-    return !!(this.submitted && control?.errors);
+    return this.formHelperService.isInvalid(this.registrationForm, this.submitted, controlName);
   }
 
   /**
@@ -111,8 +112,7 @@ export class Registration {
    * @returns boolean indicating if the error message should be shown
    */
   hasError(controlName: string): boolean {
-    const control = this.registrationForm.get(controlName);
-    return this.submitted && !!control?.errors;
+    return this.formHelperService.hasError(this.registrationForm, this.submitted, controlName);
   }
 }
 

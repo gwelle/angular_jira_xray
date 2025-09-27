@@ -14,5 +14,9 @@ export const routes: Routes = [
     {
         path: 'login',
         loadComponent: () => import('./components/login/login').then(m => m.Login)
+    },
+    {
+        path: 'resend_confirmation',
+        loadComponent: () => import('./components/resend/resend-confirmation-email').then(m => m.ResendConfirmationEmail)
     }
 ];

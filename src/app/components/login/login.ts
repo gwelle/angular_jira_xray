@@ -36,36 +36,53 @@ export class Login implements OnInit {
    * @returns void
    */
   ngOnInit(): void {
-    // Check for activation message in query params (e.g., after account activation)
+    // Récupération des query params après redirection ou activation
     this.route.queryParams.subscribe(params => {
-      if (params['activated'] === '1') {
-        if(params['info'] === 'already_activated') {
+      const activated = params['activated'];
+      const error = params['error'];
+      const info = params['info'];
+
+      if (activated === '1') {
+        if (info === 'already_activated') {
           this.activationMessage = 'Votre compte est déjà activé. Vous pouvez vous connecter.';
         } 
         else {
           this.activationMessage = 'Votre compte a été activé avec succès ! Vous pouvez vous connecter.';
         }
+        this.isResending = false;
       } 
-
-      else if (params['activated'] === '0') {
-        const error = params['error'];
-
-        if (error === 'token_expired') {
-          this.activationMessage = "Votre lien d'activation n'est plus valide. Un nouveau email vous a été renvoyé.";
-        } 
-        else if (error === 'invalid_token') {
-          this.activationMessage = "Ce lien d’activation est invalide. Veuillez demander un nouveau lien.";
-          this.isResending = true;
+      
+      else if (activated === '0') {
+        switch (error) {
+          case 'token_expired':
+            this.activationMessage = "Votre lien d'activation n'est plus valide. Un nouveau email vous a été renvoyé.";
+            this.isResending = false;
+            break;
+          case 'invalid_token':
+            this.activationMessage = "Ce lien d’activation est invalide. Veuillez demander un nouveau lien.";
+            this.isResending = true;
+            break;
+          case 'max_resend_reached':
+            this.activationMessage = "Vous avez atteint le nombre maximum de demandes de renvoi. Veuillez réessayer plus tard.";
+            this.isResending = false;
+            break;
+          default:
+            // Aucun "error" spécifique, on regarde "info"
+            if (info === 'check_resend_email') {
+              this.activationMessage = "Si un compte existe, un e-mail de confirmation sera envoyé.";
+            } 
+            else {
+              this.activationMessage = 'Le serveur a rencontré une erreur. Veuillez réessayer plus tard.';
+            }
+            this.isResending = false;
+            break;
         }
-        else if(error === 'max_resend_reached') {
-          this.activationMessage = "Vous avez atteint le nombre maximum de demandes de renvoi. Veuillez réessayer plus tard.";
-        }
-        else if (error === 'user_not_found') {
-          this.activationMessage = "Aucun compte n'est associé à cet email.";
-        } 
-        else {
-          this.activationMessage = 'Impossible d’activer votre compte. Veuillez réessayer plus tard.';
-        }
+      } 
+      
+      else {
+        // Cas par défaut, pas de query param "activated"
+        this.activationMessage = null;
+        this.isResending = false;
       }
     });
   }
@@ -76,13 +93,18 @@ export class Login implements OnInit {
    * @returns The CSS class for the alert
    */
   getAlertClass(message: string): string {
-    if (message.includes('est déjà activé') || message.includes('demandes de renvoi')) {
-      return 'alert-warning';
-    }
-    else if (message.includes('succès')) {
+    if (message.includes('succès')) {
       return 'alert-success';
     }
-  
+    else if (message.includes('est déjà activé') ) {
+      return 'alert-warning';
+    }
+    else if (message.includes('demandes de renvoi')) {
+      return 'alert alert-info';
+    }
+    else if (message.includes('Si un compte existe')) {
+      return 'alert alert-secondary';
+    }
     return 'alert-danger';
   }
 
