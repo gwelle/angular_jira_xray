@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit} from '@angular/core';
 import { ReactiveFormsModule, FormGroup, Validators, FormBuilder } from '@angular/forms';
 import { UserService } from '../../services/user.service';
 import { FormHelperService } from '../../services/form-helper.service';
@@ -13,24 +13,21 @@ import { HttpErrorResponse } from '@angular/common/http';
   imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './registration.html'
 })
-export class Registration {
+export class Registration implements OnInit {
 
   // Define any properties or methods needed for registration
-  registrationForm: FormGroup;
+  registrationForm!: FormGroup;
   submitted = false;
+  private readonly userService = inject(UserService);
+  private readonly formHelperService = inject(FormHelperService);
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
 
+  constructor() {
+    this.ngOnInit();
+  }  
 
-  /**
-   * constructor
-   * @param userService
-   * @param FormHelperService
-   * @param fb
-   * @param router
-   */
-  constructor(private readonly userService: UserService, 
-    private readonly formHelperService : FormHelperService,
-    private readonly fb: FormBuilder, 
-    private readonly router: Router) {
+  ngOnInit(): void {
     this.registrationForm = this.fb.group({
       email: ['', [Validators.required,
         Validators.pattern(/^[a-zA-Z0-9]+([._%+-]?[a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/)]],
@@ -42,6 +39,7 @@ export class Registration {
       lastName: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/)]]
     },{ validators: this.formHelperService.PasswordMatchValidator });
   }
+
 
   /**
    * Handle form submission
@@ -67,13 +65,13 @@ export class Registration {
 
       // Call the user service to register the user
       this.userService.register(user).subscribe({
-        next: (response) => {
+        next: () => {
           // Navigate to the login page
           this.router.navigate(['/login']);
         },
         error: (err: HttpErrorResponse) => {
           if (err.status === 422 && err.error.violations) {
-            const emailViolation = err.error.violations.find((v: any) => v.propertyPath === 'email');
+            const emailViolation = err.error.violations.find((v: { propertyPath: string }) => v.propertyPath === 'email');
             if (emailViolation) {
               // ici tu peux mettre à jour un FormControl pour montrer l'erreur
               this.registrationForm.get('email')?.setErrors({ alreadyExists: true });

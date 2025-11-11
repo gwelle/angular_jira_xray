@@ -1,0 +1,13 @@
+{
+  "root": true,
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "plugins": ["rxjs", "@angular-eslint"],
+      "extends": ["plugin:@angular-eslint/recommended", "plugin:rxjs/recommended"],
+      "rules": {
+        "rxjs/no-ignored-subscription": "warn"
+      }
+    }
+  ]
+}

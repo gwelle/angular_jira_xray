@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -11,25 +11,27 @@ import { FormHelperService } from '../../services/form-helper.service';
   imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './resend-confirmation-email.html'
 })
-export class ResendConfirmationEmail {
+export class ResendConfirmationEmail implements OnInit {
 
-  resendForm: FormGroup;
+  resendForm!: FormGroup;
   submitted = false;
+  private readonly userService = inject(UserService);
+  private readonly formHelperService = inject(FormHelperService);
 
-  /** constructor
-   * @param userService
-   * @param FormHelperService
-   * @param fb
-   * @param router
-   */
-  constructor(private readonly userService: UserService, 
-    private readonly formHelperService : FormHelperService,
-    private readonly fb: FormBuilder, 
-    private readonly router: Router) {
+  ngOnInit(): void {
     this.resendForm = this.fb.group({
       email: ['', [Validators.required,
         Validators.pattern(/^[a-zA-Z0-9]+([._%+-]?[a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/)]]
     });
+  }
+
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  /** 
+   * constructor
+   */
+  constructor() {
+    this.ngOnInit();
   }
 
   /**
@@ -77,7 +79,7 @@ export class ResendConfirmationEmail {
             this.router.navigate(['/login'], { queryParams: { activated: 0, info: 'check_resend_email' } });
           }
         },
-        error: (err) => this.router.navigate(['/registration'])
+        error: () => this.router.navigate(['/registration'])
       });
     }
   }

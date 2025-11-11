@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -12,22 +12,19 @@ import { CommonModule } from '@angular/common';
 export class Login implements OnInit {
 
   // Define any properties or methods needed for login
-  loginForm: FormGroup;
+  loginForm!: FormGroup;
   activationMessage: string | null = null;
-  isResending: boolean = false;
+  isResending = false;
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);  
+  
 
   /*
    * Constructor for the Login component
-   * @param fb FormBuilder instance
-   * @param router Router instance
-   * @param route ActivatedRoute instance
    */
-  constructor( private readonly fb: FormBuilder, 
-    private readonly router: Router, private readonly route: ActivatedRoute) {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required]],
-      password: ['', [Validators.required]],
-    });
+  constructor() {
+    this.ngOnInit();
   }
 
   /**
@@ -36,6 +33,11 @@ export class Login implements OnInit {
    * @returns void
    */
   ngOnInit(): void {
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required]],
+      password: ['', [Validators.required]],
+    });
+
     // Récupération des query params après redirection ou activation
     this.route.queryParams.subscribe(params => {
       const activated = params['activated'];
@@ -112,5 +114,13 @@ export class Login implements OnInit {
    * Handle form submission
    * @returns void
    */
-  onSubmit() {}
+  onSubmit() {
+    // Mark the form as submitted
+    if (this.loginForm.valid) {
+      // Form is valid, proceed with login
+      const email = this.loginForm.get('email')?.value;
+      const password = this.loginForm.get('password')?.value;
+      console.log('Login attempt with email:', email, 'and password:', password);
+    }
+  }
 }

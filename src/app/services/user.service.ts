@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -19,11 +19,9 @@ export class UserService {
   // Define any properties or methods needed for user management
   private readonly apiUrl: string;
 
-  /**
-   * Constructor to inject HttpClient.
-   * @param http - HttpClient for making HTTP requests.
-   */
-  constructor(private readonly http: HttpClient) {
+  private readonly http = inject(HttpClient);
+
+  constructor() {
     // Initialize the API URL from environment variables
     this.apiUrl = environment.API_URL;
   }
