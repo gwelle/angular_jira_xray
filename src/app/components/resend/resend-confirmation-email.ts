@@ -2,36 +2,60 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { UserService } from '../../services/user.service';
-import { FormHelperService } from '../../services/form-helper.service';
+import { FormInterface } from '../../interfaces/form-interface';
+import { FormHelperProviderInterface } from '../../tokens/global.token';
+import { ResendConfirmationEmailService } from '../../services/resend-confirmation-email.service';
+import { ResendConfirmationEmailProviderInterface } from '../../tokens/resend-confirmation-email.token';
+import { HandlerProviderInterface } from '../../tokens/resend-confirmation-email.token';
+import { ResendConfirmationEmailHandler } from '../../handlers/resend-confirmation-email.handler';
 
 @Component({
   selector: 'app-resend-confirmation-email',
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule],
+  providers: [
+    { provide: ResendConfirmationEmailProviderInterface, useClass: ResendConfirmationEmailService },
+    { provide: HandlerProviderInterface, useClass: ResendConfirmationEmailHandler }
+  ],
   templateUrl: './resend-confirmation-email.html'
 })
-export class ResendConfirmationEmail implements OnInit {
+export class ResendConfirmationEmail implements OnInit, FormInterface {
 
-  resendForm!: FormGroup;
+  form!: FormGroup;
   submitted = false;
-  private readonly userService = inject(UserService);
-  private readonly formHelperService = inject(FormHelperService);
+  private readonly formHelperProvider = inject(FormHelperProviderInterface);
+  private readonly resendConfirmationEmailProvider = inject(ResendConfirmationEmailProviderInterface);
+  private readonly handlerProvider = inject(HandlerProviderInterface);
+  readonly formBuilder = inject(FormBuilder);
+  readonly router = inject(Router);
 
   ngOnInit(): void {
-    this.resendForm = this.fb.group({
+    this.form = this.formBuilder.group({
       email: ['', [Validators.required,
         Validators.pattern(/^[a-zA-Z0-9]+([._%+-]?[a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/)]]
     });
   }
 
-  private readonly fb = inject(FormBuilder);
-  private readonly router = inject(Router);
   /** 
    * constructor
    */
   constructor() {
     this.ngOnInit();
+  }
+
+  onSubmit() {
+    // Mark the form as submitted
+    this.submitted = true;
+
+    if (this.form.valid) {
+
+      const email = this.form.get('email')?.value;
+
+      this.resendConfirmationEmailProvider.resendConfirmationEmail(email).subscribe({
+        next: (res) => this.handlerProvider.handleResponse(res),
+        error: (err) => this.handlerProvider.handleError(err)
+      });
+    }
   }
 
   /**
@@ -40,7 +64,7 @@ export class ResendConfirmationEmail implements OnInit {
    * @returns Error message string
    */
   getErrorMessage(controlName: string) {
-    return this.formHelperService.getErrorMessage(this.resendForm, controlName);
+    return this.formHelperProvider.getErrorMessage(this.form, controlName);
   }
 
   /**
@@ -49,7 +73,7 @@ export class ResendConfirmationEmail implements OnInit {
    * @returns boolean indicating if the control is invalid
    */
   isInvalid(controlName: string): boolean {
-    return this.formHelperService.isInvalid(this.resendForm, this.submitted, controlName);
+    return this.formHelperProvider.isInvalid(this.form, this.submitted, controlName);
   }
 
   /**
@@ -58,30 +82,7 @@ export class ResendConfirmationEmail implements OnInit {
    * @returns boolean indicating if the error message should be shown
    */
   hasError(controlName: string): boolean {
-    return this.formHelperService.hasError(this.resendForm, this.submitted, controlName);
-  }
-
-  onSubmit() {
-    // Mark the form as submitted
-    this.submitted = true;
-
-    if (this.resendForm.valid) {
-
-      const email = this.resendForm.get('email')?.value;
-
-      // Call the userService to resend the confirmation email
-      this.userService.resendConfirmationEmail(email).subscribe({
-        next: (res) => {
-          if (res.error === 'max_resend_reached') {
-            this.router.navigate(['/login'], { queryParams: { activated: 0, error: 'max_resend_reached' } });
-          } 
-          else {
-            this.router.navigate(['/login'], { queryParams: { activated: 0, info: 'check_resend_email' } });
-          }
-        },
-        error: () => this.router.navigate(['/registration'])
-      });
-    }
+    return this.formHelperProvider.hasError(this.form, this.submitted, controlName);
   }
 
 }

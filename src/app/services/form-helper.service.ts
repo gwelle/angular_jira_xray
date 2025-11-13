@@ -1,11 +1,12 @@
 
 import { FormGroup, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { Injectable } from '@angular/core';
+import { FormHelperInterface } from '../interfaces/fom-helper.interface';
 
 @Injectable({
   providedIn: 'root'
 })
-export class FormHelperService {
+export class FormHelperService implements FormHelperInterface {
 
   /**
    * Get error message for a form control
@@ -14,9 +15,12 @@ export class FormHelperService {
    * @returns Error message string
    */
   getErrorMessage(form: FormGroup, controlName: string) {
+
+    // Récupère le contrôle du formulaire
     const control = form.get(controlName);
     if (!control?.errors) return '';
 
+    // Gestion des erreurs personnalisées
     if (control.errors['passwordMismatch']) {
       return 'Les mots de passe ne correspondent pas';
     }
@@ -67,6 +71,8 @@ export class FormHelperService {
    * @returns ValidationErrors if the passwords do not match, otherwise null  
    */
   PasswordMatchValidator: ValidatorFn = (formGroup: AbstractControl): ValidationErrors | null => {
+
+    // Récupère les valeurs des champs mot de passe et confirmation
     const password = formGroup.get('plainPassword')?.value;
     const confirmPasswordControl = formGroup.get('confirmPassword');
 
