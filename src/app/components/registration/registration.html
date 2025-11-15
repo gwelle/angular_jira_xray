@@ -21,11 +21,11 @@
     </div>
 
     <label for="confirm-password">Confirmation Password</label>
-    <input type="password" id="confirm-password" formControlName="confirmPassword"
-    [ngClass]="{ 'is-invalid': isInvalid('confirmPassword') }">
+    <input type="password" id="confirm-password" formControlName="confirmationPassword"
+    [ngClass]="{ 'is-invalid': isInvalid('confirmationPassword') }">
     <div class="invalid-feedback">
-        @if(hasError('confirmPassword')){
-            {{ getErrorMessage('confirmPassword') }}
+        @if(hasError('confirmationPassword')){
+            {{ getErrorMessage('confirmationPassword') }}
         }  
     </div>
 

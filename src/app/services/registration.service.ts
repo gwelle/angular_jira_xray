@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User } from '../models/user.model';
+import { UserPayload } from '../interfaces/user-payload.interface';
 import { RegistrationInterface } from '../interfaces/registration.interface';
 import { environment } from '../../environments/environment';
 @Injectable({
@@ -20,10 +20,10 @@ export class RegistrationService implements RegistrationInterface {
 
   /**
    * Registers a new user.
-   * @param user - The user to register.
-   * @returns An Observable of the registered User.
+   * @param user The user payload containing registration details.
+   * @returns An Observable of the registered user payload.
    */
-  register(user: User): Observable<User> {
-    return this.http.post<User>(this.apiUrl, user);
+  register(user: UserPayload): Observable<UserPayload> {
+    return this.http.post<UserPayload>(this.apiUrl, user);
   }
 }

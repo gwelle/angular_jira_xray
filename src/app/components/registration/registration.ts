@@ -1,12 +1,11 @@
-import { Component, inject, OnInit} from '@angular/core';
-import { ReactiveFormsModule, FormGroup, Validators, FormBuilder } from '@angular/forms';
+import { Component, inject, OnInit, ChangeDetectionStrategy} from '@angular/core';
+import { ReactiveFormsModule, FormGroup, FormBuilder } from '@angular/forms';
 
 import { CommonModule } from '@angular/common';
 import { FormInterface } from '../../interfaces/form-interface';
 import { UserMapperProviderInterface } from '../../tokens/registration-token';
 import { RegistrationProviderInterface } from '../../tokens/registration-token';
 import { FormHelperProviderInterface } from '../../tokens/global.token';
-import { FormHelperService } from '../../services/form-helper.service';
 import { RegistrationService } from '../../services/registration.service';
 import { UserMapper } from '../../mappers/user-mapper';
 import { HandlerProviderInterface } from '../../tokens/registration-token';
@@ -15,6 +14,7 @@ import { HandlerProviderInterface } from '../../tokens/registration-token';
   selector: 'app-registration',
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     { provide: RegistrationProviderInterface, useClass: RegistrationService },
     { provide: UserMapperProviderInterface, useClass: UserMapper },
@@ -30,24 +30,16 @@ export class Registration implements OnInit, FormInterface {
   private readonly userMapperProvider = inject(UserMapperProviderInterface);
   private readonly formHelperProvider = inject(FormHelperProviderInterface);
   private readonly handlerProvider = inject(HandlerProviderInterface);
-  private readonly formHelperService = inject(FormHelperService);
   readonly formBuilder = inject(FormBuilder);
-
-  constructor() {
-    this.ngOnInit();
-  }  
 
   ngOnInit(): void {
     this.form = this.formBuilder.group({
-      email: ['', [Validators.required,
-        Validators.pattern(/^[a-zA-Z0-9]+([._%+-]?[a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/)]],
-      plainPassword: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(15),
-         Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,15}$/)]],
-      confirmPassword: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(15),
-         Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,15}$/)]],
-      firstName: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/)]],
-      lastName: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/)]]
-    },{ validators: this.formHelperService.PasswordMatchValidator });
+      email: [''],
+      plainPassword: [''],
+      confirmationPassword: [''],
+      firstName: [''],
+      lastName: [''],
+    });
   }
 
   /**
@@ -59,10 +51,9 @@ export class Registration implements OnInit, FormInterface {
     this.submitted = true;
 
     if (this.form.valid) {
-      
-      const user = this.userMapperProvider.fromForm(this.form);
+      const payload = this.userMapperProvider.fromForm(this.form).toPayload();
 
-      this.registrationProvider.register(user).subscribe({
+      this.registrationProvider.register(payload).subscribe({
         next: () => this.handlerProvider.handleResponse(),
         error: (err) => this.handlerProvider.handleError(err, this.form)
       });
