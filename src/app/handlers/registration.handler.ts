@@ -47,7 +47,6 @@ export class RegistrationHandler implements HandlerInterface {
             return;
         } 
         
-
         if (err.status >= 500) {
             form.setErrors({ backend: "Une erreur interne est survenue. Réessayez plus tard." });
         }

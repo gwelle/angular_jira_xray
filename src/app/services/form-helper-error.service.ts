@@ -45,7 +45,7 @@ export class FormHelperErrorService implements FormHelperErrorInterface {
    * @param controlName Name of the form control
    * @returns Backend error message string or empty string
    */
-  getErrorMessage(form: FormGroup, controlName: string) {
+  getErrorMessage(form: FormGroup, controlName: string) : string {
     const control = form.get(controlName);
     if (!control?.errors) return '';
 
