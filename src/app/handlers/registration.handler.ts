@@ -38,7 +38,13 @@ export class RegistrationHandler implements HandlerInterface {
                 const control = form.get(v.propertyPath);
                 if (!control) return; 
 
-                control.setErrors({ backend: v.message });
+                //const existing = control.errors ?? {};
+
+                /*control.setErrors({ 
+                    ...existing,
+                    backend: [...(existing['backend'] ?? []), v.message] 
+                });*/
+                control.setErrors({ 'backend': v.message });
 
                 control.markAsTouched(); // Pour afficher l'erreur immédiatement
                 control.markAsDirty(); // Pour marquer le champ comme modifié

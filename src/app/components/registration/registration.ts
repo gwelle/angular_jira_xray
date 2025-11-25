@@ -1,15 +1,17 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy} from '@angular/core';
-import { ReactiveFormsModule, FormGroup, FormBuilder } from '@angular/forms';
-import { debounceTime, map, merge, Observable, startWith } from 'rxjs';
+import { ReactiveFormsModule, FormGroup, FormBuilder, ValidatorFn } from '@angular/forms';
+import { combineLatest, map, Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { FormInterface } from '../../interfaces/form-interface';
-import { FieldState } from '../../interfaces/field-state.interface'; 
+import { FormCustomInterface } from '../../interfaces/form-custom.interface';
+import { FormFieldState } from '../../interfaces/form-field-state.interface';
 import { UserMapperProviderInterface } from '../../tokens/registration-token';
 import { RegistrationProviderInterface } from '../../tokens/registration-token';
 import { FormHelperProviderInterface } from '../../tokens/global.token';
 import { RegistrationService } from '../../services/registration.service';
 import { UserMapper } from '../../mappers/user-mapper';
 import { HandlerProviderInterface } from '../../tokens/registration-token';
+import { FormFieldConfig } from '../../interfaces/form-field-config.interface';
+import { FormField } from '../../interfaces/form-field.interface';
 
 @Component({
   selector: 'app-registration',
@@ -22,48 +24,57 @@ import { HandlerProviderInterface } from '../../tokens/registration-token';
   ],
   templateUrl: './registration.html'
 })
-export class Registration implements OnInit, FormInterface {
+export class Registration implements OnInit, FormCustomInterface {
 
   // Define any properties or methods needed for registration
-  form!: FormGroup;
-  submitted = false;
+  
   private readonly registrationProvider = inject(RegistrationProviderInterface);
   private readonly userMapperProvider = inject(UserMapperProviderInterface);
-  readonly formHelperProvider = inject(FormHelperProviderInterface);
+  private readonly formHelperProvider = inject(FormHelperProviderInterface);
   private readonly handlerProvider = inject(HandlerProviderInterface);
+
+  form!: FormGroup;
   readonly formBuilder = inject(FormBuilder);
-  emailState$!: Observable<FieldState>;
+  formFieldState$!: Observable<FormField[]>;
+  formFieldsConfig!: FormFieldConfig[];
 
   ngOnInit(): void {
-    this.form = this.formBuilder.group({
-      email: [''],
-      plainPassword: ['Test1234$$'],
-      confirmationPassword: ['Test1234$$'],
-      firstName: ['Guillaume'],
-      lastName: [''],
-    });
-    const control = this.form.get('email')!;
 
-    this.emailState$ = merge(
-      control.valueChanges.pipe(debounceTime(300)), // On attend 300 ms pour ne pas recalculer trop souvent
-      control.statusChanges
-    )
-      .pipe(
-          startWith(null), // Émet la valeur initiale dès le chargement
-            map(() => { 
-              const error = this.formHelperProvider.getErrorMessage(this.form, 'email');
-              return {
-                invalid: control.invalid,
-                showError: !!error && 
-                  (control.dirty || 
-                    control.touched || 
-                    this.submitted || 
-                    !!control.errors?.['backend']
-                  ),
-                errorMessage: error ?? ''
-              };
-            })
-      );
+    // Define form fields configuration
+    this.formFieldsConfig = [
+      { name: 'email', label: 'Email', type: 'email', },
+      { name: 'plainPassword', label: 'Plain Password', type: 'password' },
+      { name: 'confirmationPassword', label: 'Confirm Password', type: 'password'  },
+      { name: 'firstName', label: 'First Name', type: 'text' },
+      { name: 'lastName', label: 'Last Name', type: 'text' }
+    ];
+
+    // Build form group dynamically based on form fields
+    const formConfig = this.formFieldsConfig.reduce((acc, field) => {
+      acc[field.name] = ['', []];
+      return acc;
+    }, {} as Record<string, [string, ValidatorFn[]]>);
+
+    // Create the form group 
+    this.form = this.formBuilder.group(formConfig);
+
+    // Combine field configs with their states
+    this.formFieldState$ = combineLatest(
+      this.formFieldsConfig.map(f => 
+        this.createFormFieldErrorStateFor(f.name).pipe(
+          map((state: FormFieldState) => ({ ...f, state }))
+        )
+      )
+    );
+  }
+
+/**
+ *  Create field state for a given control name
+ * @param controlName - The name of the form control
+ * @returns Observable<FormFieldState>
+ */
+createFormFieldErrorStateFor(controlName: string): Observable<FormFieldState> {
+  return this.formHelperProvider.createFormFieldErrorState(this.form.get(controlName)!,this.form);
 }
 
   /**
@@ -71,43 +82,18 @@ export class Registration implements OnInit, FormInterface {
    * @returns void
    */
   onSubmit() {
-    // Mark the form as submitted
-    this.submitted = true;
-
-    if (this.form.valid) {
-      const payload = this.userMapperProvider.fromForm(this.form).toPayload();
-
-      this.registrationProvider.register(payload).subscribe({
-        next: () => this.handlerProvider.handleResponse(),
-        error: (err) => this.handlerProvider.handleError(err, this.form)
-      });
+    
+    this.form.markAllAsTouched(); // Mark all fields as touched to show validation errors
+    if (this.form.invalid) {
+      return;
     }
-  }
 
-  /**
-   * Get error message for a form control
-   * @param controlName Name of the form control
-   * @returns Error message string
-   */
-  getErrorMessage(controlName: string) {
-    return this.formHelperProvider.getErrorMessage(this.form, controlName);
-  }
+    const payload = this.userMapperProvider.fromForm(this.form).toPayload();
 
-  /**
-   * Check if a form control is invalid
-   * @param controlName Name of the form control
-   * @returns boolean indicating if the control is invalid
-   */
-  isInvalid(controlName: string): boolean {
-    return this.formHelperProvider.isInvalid(this.form, this.submitted, controlName);
-  }
-
-  /**
-   * Show error message for a form control
-   * @param controlName Name of the form control
-   * @returns boolean indicating if the error message should be shown
-   */
-  hasError(controlName: string): boolean {
-    return this.formHelperProvider.hasError(this.form, this.submitted, controlName);
+    this.registrationProvider.register(payload).subscribe({
+      next: () => this.handlerProvider.handleResponse(),
+      error: (err) => this.handlerProvider.handleError(err, this.form)
+    });
   }
 }
+

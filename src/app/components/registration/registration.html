@@ -2,58 +2,25 @@
 
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
-    @if(emailState$ | async; as state){
-        <div>
-            <label for="email">Email</label>
-            <input 
-                type="email" 
-                id="email" 
-                formControlName="email"
-                [ngClass]="{'is-invalid': state.showError}">
-            
-            <div class="invalid-feedback">
-                @if(state.showError){
-                    {{ state.errorMessage }}
+    @if (formFieldState$ | async; as fields) {
+        @for (field of fields; track field.name) {
+            <div class="form-group">
+                <label [attr.for]="field.name">{{ field.label }}</label>
+                <input 
+                [type]="field.type" 
+                [id]="field.name" 
+                [formControlName]="field.name"
+                class="form-control"
+                [ngClass]="{ 'is-invalid': field.state.showError }">
+                
+                @if (field.state.showError) {
+                    <div class="invalid-feedback">
+                        {{ field.state.errorMessage }}
+                    </div>
                 }
             </div>
-        </div>
+        }
     }
-
-    <label for="plain-password">Plain Password</label>
-    <input type="password" id="plain-password" formControlName="plainPassword"
-    [ngClass]="{ 'is-invalid': isInvalid('plainPassword') }">
-    <div class="invalid-feedback">
-        @if(hasError('plainPassword')){
-            {{ getErrorMessage('plainPassword') }}
-        }  
-    </div>
-
-    <label for="confirm-password">Confirmation Password</label>
-    <input type="password" id="confirm-password" formControlName="confirmationPassword"
-    [ngClass]="{ 'is-invalid': isInvalid('confirmationPassword') }">
-    <div class="invalid-feedback">
-        @if(hasError('confirmationPassword')){
-            {{ getErrorMessage('confirmationPassword') }}
-        }  
-    </div>
-
-    <label for="first-name">First Name</label>
-    <input type="text" id="first-name" formControlName="firstName"
-    [ngClass]="{ 'is-invalid': isInvalid('firstName') }">
-    <div class="invalid-feedback">
-        @if(hasError('firstName')){
-            {{ getErrorMessage('firstName') }}
-        }  
-    </div>
-
-    <label for="last-name">Last Name</label>
-    <input type="text" id="last-name" formControlName="lastName"
-    [ngClass]="{ 'is-invalid': isInvalid('lastName') }">
-    <div class="invalid-feedback">
-        @if(hasError('lastName')){
-            {{ getErrorMessage('lastName') }}
-        }  
-    </div>
 
     <button type="submit" class="btn btn-primary">Valider</button><br /><br />
     <a routerLink="/login" class="text-primary text-decoration-none text-center">

@@ -1,4 +1,5 @@
-export interface FieldState {
+
+export interface FormFieldState {
   invalid: boolean; // Indicates if the form control is invalid
   showError: boolean; // Indicates if the error message should be shown
   errorMessage: string; // The error message to display
