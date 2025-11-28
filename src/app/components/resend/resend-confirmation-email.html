@@ -3,13 +3,7 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
     <label for="email">Email</label>
-    <input type="email" id="email" formControlName="email" 
-    [ngClass]="{ 'is-invalid': isInvalid('email') }">
-    <div class="invalid-feedback">
-        @if(hasError('email')){
-            {{ getErrorMessage('email') }}
-        }  
-    </div>
+    <input type="email" id="email" formControlName="email">
 
     <button type="submit" class="btn btn-primary">Valider</button>
 </form>

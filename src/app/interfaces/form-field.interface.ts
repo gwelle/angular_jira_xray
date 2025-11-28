@@ -6,6 +6,7 @@ export interface FormField {
   name: string;
   label: string;
   type: 'email' | 'text' | 'password';
+  autocomplete?: string;
   
   // État
   state: FormFieldState;

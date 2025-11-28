@@ -2,12 +2,15 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormInterface } from '../../interfaces/form-interface';
 import { FormHelperProviderInterface } from '../../tokens/global.token';
 import { ResendConfirmationEmailService } from '../../services/resend-confirmation-email.service';
 import { ResendConfirmationEmailProviderInterface } from '../../tokens/resend-confirmation-email.token';
 import { HandlerProviderInterface } from '../../tokens/resend-confirmation-email.token';
 import { ResendConfirmationEmailHandler } from '../../handlers/resend-confirmation-email.handler';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { FormCustomInterface } from '../../interfaces/form-custom.interface';
+import { FormFieldState } from '../../interfaces/form-field-state.interface';
+import { FormFieldConfig } from '../../interfaces/form-field-config.interface';
 
 @Component({
   selector: 'app-resend-confirmation-email',
@@ -19,7 +22,7 @@ import { ResendConfirmationEmailHandler } from '../../handlers/resend-confirmati
   ],
   templateUrl: './resend-confirmation-email.html'
 })
-export class ResendConfirmationEmail implements OnInit, FormInterface {
+export class ResendConfirmationEmail implements OnInit, FormCustomInterface {
 
   form!: FormGroup;
   submitted = false;
@@ -28,6 +31,8 @@ export class ResendConfirmationEmail implements OnInit, FormInterface {
   private readonly handlerProvider = inject(HandlerProviderInterface);
   readonly formBuilder = inject(FormBuilder);
   readonly router = inject(Router);
+  submitted$ = new BehaviorSubject<boolean>(false);
+  formFieldsConfig!: FormFieldConfig[];
 
   ngOnInit(): void {
     this.form = this.formBuilder.group({
@@ -59,30 +64,12 @@ export class ResendConfirmationEmail implements OnInit, FormInterface {
   }
 
   /**
-   * Get error message for a form control
+   * Create form field error state observable
    * @param controlName Name of the form control
-   * @returns Error message string
+   * @returns Observable of FormFieldState
    */
-  getErrorMessage(controlName: string) {
-    return this.formHelperProvider.getErrorMessage(this.form, controlName);
+  createFormFieldErrorStateFor(controlName: string): Observable<FormFieldState>{
+    return this.formHelperProvider.createFormFieldErrorState(this.form.get(controlName)!, this.form);
   }
-
-  /**
-   * Check if a form control is invalid
-   * @param controlName Name of the form control
-   * @returns boolean indicating if the control is invalid
-   */
-  isInvalid(controlName: string): boolean {
-    return this.formHelperProvider.isInvalid(this.form, this.submitted, controlName);
-  }
-
-  /**
-   * Show error message for a form control
-   * @param controlName Name of the form control
-   * @returns boolean indicating if the error message should be shown
-   */
-  hasError(controlName: string): boolean {
-    return this.formHelperProvider.hasError(this.form, this.submitted, controlName);
-  }
-
+  
 }

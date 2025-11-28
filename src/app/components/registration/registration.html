@@ -10,7 +10,8 @@
                 [type]="field.type" 
                 [id]="field.name" 
                 [formControlName]="field.name"
-                class="form-control"
+                [attr.autocomplete]="field.autocomplete ? field.autocomplete : null"
+                class="form-control ng-untouched ng-pristine ng-valid"
                 [ngClass]="{ 'is-invalid': field.state.showError }">
                 
                 @if (field.state.showError) {
@@ -22,10 +23,8 @@
         }
     }
 
-    <button type="submit" class="btn btn-primary">Valider</button><br /><br />
-    <a routerLink="/login" class="text-primary text-decoration-none text-center">
-        Déjà un compte ? Se connecter
-    </a>
+    <button type="submit" class="btn btn-primary">Valider</button>
+    
 </form>
 
 

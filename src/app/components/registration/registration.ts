@@ -42,9 +42,9 @@ export class Registration implements OnInit, FormCustomInterface {
 
     // Define form fields configuration
     this.formFieldsConfig = [
-      { name: 'email', label: 'Email', type: 'email', },
-      { name: 'plainPassword', label: 'Plain Password', type: 'password' },
-      { name: 'confirmationPassword', label: 'Confirm Password', type: 'password'  },
+      { name: 'email', label: 'Email', type: 'email', autocomplete: 'username'  },
+      { name: 'plainPassword', label: 'Plain Password', type: 'password', autocomplete: 'new-password'  },
+      { name: 'confirmationPassword', label: 'Confirm Password', type: 'password', autocomplete: 'new-password'  },
       { name: 'firstName', label: 'First Name', type: 'text' },
       { name: 'lastName', label: 'Last Name', type: 'text' }
     ];
@@ -84,6 +84,7 @@ createFormFieldErrorStateFor(controlName: string): Observable<FormFieldState> {
   onSubmit() {
     
     this.form.markAllAsTouched(); // Mark all fields as touched to show validation errors
+
     if (this.form.invalid) {
       return;
     }
@@ -96,4 +97,5 @@ createFormFieldErrorStateFor(controlName: string): Observable<FormFieldState> {
     });
   }
 }
+
 
