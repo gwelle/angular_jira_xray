@@ -1,6 +1,6 @@
-import { Component, inject, OnInit, ChangeDetectionStrategy} from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy, computed, Signal, Injector, runInInjectionContext} from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormBuilder, ValidatorFn } from '@angular/forms';
-import { combineLatest, map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormCustomInterface } from '../../interfaces/form-custom.interface';
 import { FormFieldState } from '../../interfaces/form-field-state.interface';
@@ -12,6 +12,7 @@ import { UserMapper } from '../../mappers/user-mapper';
 import { HandlerProviderInterface } from '../../tokens/registration-token';
 import { FormFieldConfig } from '../../interfaces/form-field-config.interface';
 import { FormField } from '../../interfaces/form-field.interface';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-registration',
@@ -35,8 +36,14 @@ export class Registration implements OnInit, FormCustomInterface {
 
   form!: FormGroup;
   readonly formBuilder = inject(FormBuilder);
-  formFieldState$!: Observable<FormField[]>;
+  // ✅ Tableau de Signals individuels
+  fieldsState!: Signal<FormFieldState>[]
+  // ✅ Signal combiné contenant tous les champs avec leurs états
+  formFieldsState!: Signal<FormField[]>;
+  // ✅ Configuration des champs du formulaire
   formFieldsConfig!: FormFieldConfig[];
+
+  injector = inject(Injector);
 
   ngOnInit(): void {
 
@@ -58,15 +65,33 @@ export class Registration implements OnInit, FormCustomInterface {
     // Create the form group 
     this.form = this.formBuilder.group(formConfig);
 
-    // Combine field configs with their states
-    this.formFieldState$ = combineLatest(
-      this.formFieldsConfig.map(f => 
-        this.createFormFieldErrorStateFor(f.name).pipe(
-          map((state: FormFieldState) => ({ ...f, state }))
+    // ✅ Créer les signals dans un contexte d'injection
+    this.fieldsState = this.formFieldsConfig.map(f =>
+      runInInjectionContext(this.injector, () =>
+        toSignal(
+          this.formHelperProvider.createFormFieldErrorState(
+            this.form.get(f.name)!,
+            this.form
+          ),
+          {
+            initialValue: {
+              invalid: false,
+              showError: false,
+              errorMessage: ''
+            }
+          }
         )
       )
     );
+    // ✅ Créer le signal combiné des champs avec leurs états
+    this.formFieldsState = computed(() =>
+      this.formFieldsConfig.map((f, i) => ({
+        ...f,
+        state: this.fieldsState[i]()
+      }))
+    );
   }
+
 
 /**
  *  Create field state for a given control name

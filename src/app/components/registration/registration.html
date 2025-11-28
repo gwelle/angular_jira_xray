@@ -2,17 +2,18 @@
 
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
-    @if (formFieldState$ | async; as fields) {
-        @for (field of fields; track field.name) {
-            <div class="form-group">
-                <label [attr.for]="field.name">{{ field.label }}</label>
-                <input 
+    @for (field of formFieldsState(); track field.name) {    
+        <div class="form-group">
+            <label [attr.for]="field.name">{{ field.label }}</label>
+                
+            <input 
                 [type]="field.type" 
                 [id]="field.name" 
                 [formControlName]="field.name"
                 [attr.autocomplete]="field.autocomplete ? field.autocomplete : null"
                 class="form-control ng-untouched ng-pristine ng-valid"
                 [ngClass]="{ 'is-invalid': field.state.showError }">
+                
                 
                 @if (field.state.showError) {
                     <div class="invalid-feedback">
@@ -21,7 +22,7 @@
                 }
             </div>
         }
-    }
+    
 
     <button type="submit" class="btn btn-primary">Valider</button>
     

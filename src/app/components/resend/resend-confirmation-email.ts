@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, Signal } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -11,6 +11,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { FormCustomInterface } from '../../interfaces/form-custom.interface';
 import { FormFieldState } from '../../interfaces/form-field-state.interface';
 import { FormFieldConfig } from '../../interfaces/form-field-config.interface';
+import { FormField } from '../../interfaces/form-field.interface';
 
 @Component({
   selector: 'app-resend-confirmation-email',
@@ -32,6 +33,11 @@ export class ResendConfirmationEmail implements OnInit, FormCustomInterface {
   readonly formBuilder = inject(FormBuilder);
   readonly router = inject(Router);
   submitted$ = new BehaviorSubject<boolean>(false);
+  // ✅ Tableau de Signals individuels
+  fieldsState!: Signal<FormFieldState>[]
+  // ✅ Signal combiné contenant tous les champs avec leurs états
+  formFieldsState!: Signal<FormField[]>;
+  // ✅ Configuration des champs du formulaire
   formFieldsConfig!: FormFieldConfig[];
 
   ngOnInit(): void {

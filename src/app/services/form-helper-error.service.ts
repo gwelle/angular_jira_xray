@@ -3,7 +3,7 @@ import { AbstractControl, FormGroup } from '@angular/forms';
 import { Injectable } from '@angular/core';
 import { FormHelperErrorInterface } from '../interfaces/fom-helper-error.interface';
 import { FormFieldState } from '../interfaces/form-field-state.interface';
-import { debounceTime, defer, distinctUntilChanged, map, merge, Observable, shareReplay, startWith } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, merge, Observable, shareReplay, startWith } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -29,10 +29,9 @@ export class FormHelperErrorService implements FormHelperErrorInterface {
    * @returns Observable emitting FieldState objects
    */
   createFormFieldErrorState(control: AbstractControl, form: FormGroup): Observable<FormFieldState> {
-    return defer(() => {
-      return merge(
-        control.statusChanges,
-        control.valueChanges.pipe(debounceTime(300)), // On attend 300 ms pour ne pas recalculer trop souvent
+    return merge(
+      control.statusChanges.pipe(startWith(control.status)), // Émet l'état initial
+      control.valueChanges.pipe(startWith(control.value), debounceTime(300)), // Débounce pour éviter les émissions trop fréquentes
       ).pipe(
         startWith(null), // Pour émettre la valeur initiale dès le chargement
           map(() => { 
@@ -40,10 +39,6 @@ export class FormHelperErrorService implements FormHelperErrorInterface {
             const error = controlName ? this.getErrorMessage(form, controlName) : '';
             return {     
               invalid: control.invalid,
-              // ShowError s’active si :
-              // - il y a un message d’erreur
-              // - le champ a été modifié ou touché
-              // - ou qu’il y a une erreur backend
               showError: !!error && (control.dirty || control.touched || !!control.errors?.['backend']),
               errorMessage: error ?? ''     
             };     
@@ -57,6 +52,5 @@ export class FormHelperErrorService implements FormHelperErrorInterface {
           // Cache le dernier état (performance + évite double subscription)
           shareReplay({ bufferSize: 1, refCount: true })
       );
-    });
   }
 }
