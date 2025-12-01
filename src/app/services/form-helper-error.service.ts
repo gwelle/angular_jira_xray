@@ -3,7 +3,7 @@ import { AbstractControl, FormGroup } from '@angular/forms';
 import { Injectable } from '@angular/core';
 import { FormHelperErrorInterface } from '../interfaces/fom-helper-error.interface';
 import { FormFieldState } from '../interfaces/form-field-state.interface';
-import { debounceTime, distinctUntilChanged, map, merge, Observable, shareReplay, startWith } from 'rxjs';
+import { distinctUntilChanged, map, merge, Observable, shareReplay, startWith, debounceTime, defer } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -28,10 +28,11 @@ export class FormHelperErrorService implements FormHelperErrorInterface {
    * @param form FormGroup instance
    * @returns Observable emitting FieldState objects
    */
-  createFormFieldErrorState(control: AbstractControl, form: FormGroup): Observable<FormFieldState> {
+  createFormFieldErrorState$(control: AbstractControl, form: FormGroup): Observable<FormFieldState> {
+    return defer (() => {
     return merge(
-      control.statusChanges.pipe(startWith(control.status)), // Émet l'état initial
-      control.valueChanges.pipe(startWith(control.value), debounceTime(300)), // Débounce pour éviter les émissions trop fréquentes
+      control.statusChanges.pipe(startWith(control.status)), 
+      control.valueChanges.pipe(startWith(control.value), debounceTime(300))
       ).pipe(
         startWith(null), // Pour émettre la valeur initiale dès le chargement
           map(() => { 
@@ -44,13 +45,14 @@ export class FormHelperErrorService implements FormHelperErrorInterface {
             };     
           }),
           // Évite les recalculs inutiles
-          distinctUntilChanged((a, b) =>
-            a.invalid === b.invalid &&
-            a.showError === b.showError &&
-            a.errorMessage === b.errorMessage   
+          distinctUntilChanged((prev, curr) =>
+            prev.invalid === curr.invalid &&
+            prev.showError === curr.showError &&
+            prev.errorMessage === curr.errorMessage   
           ),
-          // Cache le dernier état (performance + évite double subscription)
+          // 🛡 évite les doubles souscriptions dans tes templates
           shareReplay({ bufferSize: 1, refCount: true })
       );
+    });
   }
 }

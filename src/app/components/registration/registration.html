@@ -1,33 +1,10 @@
-<h1 class="text-center padding-top-50">Registration</h1>
+<app-dynamic-form
+  [form]="form"
+  [formFieldsState]="formFieldsState"
+  title="Registration"
+  buttonLabel="Valider"
+  (submitted)="onSubmit()"
+></app-dynamic-form>
 
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
-
-    @for (field of formFieldsState(); track field.name) {    
-        <div class="form-group">
-            <label [attr.for]="field.name">{{ field.label }}</label>
-                
-            <input 
-                [type]="field.type" 
-                [id]="field.name" 
-                [formControlName]="field.name"
-                [attr.autocomplete]="field.autocomplete ? field.autocomplete : null"
-                class="form-control ng-untouched ng-pristine ng-valid"
-                [ngClass]="{ 'is-invalid': field.state.showError }">
-                
-                
-                @if (field.state.showError) {
-                    <div class="invalid-feedback">
-                        {{ field.state.errorMessage }}
-                    </div>
-                }
-            </div>
-        }
-    
-
-    <button type="submit" class="btn btn-primary">Valider</button>
-    
-</form>
-
-
-
+<!--(formReady)="onFormReady($event)"-->
 

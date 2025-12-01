@@ -1,23 +1,21 @@
-import { Component, inject, OnInit, ChangeDetectionStrategy, computed, Signal, Injector, runInInjectionContext} from '@angular/core';
-import { ReactiveFormsModule, FormGroup, FormBuilder, ValidatorFn } from '@angular/forms';
-import { Observable } from 'rxjs';
-import { CommonModule } from '@angular/common';
-import { FormCustomInterface } from '../../interfaces/form-custom.interface';
-import { FormFieldState } from '../../interfaces/form-field-state.interface';
+import { Component, inject, OnInit, ChangeDetectionStrategy, Signal} from '@angular/core';
 import { UserMapperProviderInterface } from '../../tokens/registration-token';
 import { RegistrationProviderInterface } from '../../tokens/registration-token';
-import { FormHelperProviderInterface } from '../../tokens/global.token';
 import { RegistrationService } from '../../services/registration.service';
 import { UserMapper } from '../../mappers/user-mapper';
 import { HandlerProviderInterface } from '../../tokens/registration-token';
 import { FormFieldConfig } from '../../interfaces/form-field-config.interface';
+import { CustomFormInterface } from '../../interfaces/custom-form.interface';
+import { DynamicForm } from '../dynamic-form/dynamic-form';
+import {FormGroup} from '@angular/forms';
+import { FormFieldState } from '../../interfaces/form-field-state.interface';
 import { FormField } from '../../interfaces/form-field.interface';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { FormManagerProviderInterface } from '../../tokens/global.token';
 
 @Component({
   selector: 'app-registration',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule,],
+  imports: [DynamicForm],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     { provide: RegistrationProviderInterface, useClass: RegistrationService },
@@ -25,28 +23,37 @@ import { toSignal } from '@angular/core/rxjs-interop';
   ],
   templateUrl: './registration.html'
 })
-export class Registration implements OnInit, FormCustomInterface {
+export class Registration implements OnInit, CustomFormInterface {
 
-  // Define any properties or methods needed for registration
-  
   private readonly registrationProvider = inject(RegistrationProviderInterface);
+  private readonly formManagerProvider = inject(FormManagerProviderInterface);
   private readonly userMapperProvider = inject(UserMapperProviderInterface);
-  private readonly formHelperProvider = inject(FormHelperProviderInterface);
   private readonly handlerProvider = inject(HandlerProviderInterface);
-
+  
   form!: FormGroup;
-  readonly formBuilder = inject(FormBuilder);
-  // ✅ Tableau de Signals individuels
-  fieldsState!: Signal<FormFieldState>[]
-  // ✅ Signal combiné contenant tous les champs avec leurs états
-  formFieldsState!: Signal<FormField[]>;
   // ✅ Configuration des champs du formulaire
   formFieldsConfig!: FormFieldConfig[];
+  // ✅ Tableau de Signals individuels
+  fieldsState!: Signal<FormFieldState>[];
+  // ✅ Signal combiné contenant tous les champs avec leurs états
+  formFieldsState!: Signal<FormField[]>;
 
-  injector = inject(Injector);
-
+  /**
+   * OnInit lifecycle hook
+   * @returns void
+   */
   ngOnInit(): void {
+    this.initializeFormFieldsConfig();
+    this.form = this.formManagerProvider.buildForm(this.formFieldsConfig);
+    this.fieldsState = this.formManagerProvider.initializeFieldStates(this.form, this.formFieldsConfig);
+    this.formFieldsState = this.formManagerProvider.combineFormFieldsAndStates(this.formFieldsConfig, this.fieldsState);
+  }
 
+  /**   
+   * Initialize form fields configuration
+   * @returns void
+   */
+   initializeFormFieldsConfig(): void {
     // Define form fields configuration
     this.formFieldsConfig = [
       { name: 'email', label: 'Email', type: 'email', autocomplete: 'username'  },
@@ -55,65 +62,23 @@ export class Registration implements OnInit, FormCustomInterface {
       { name: 'firstName', label: 'First Name', type: 'text' },
       { name: 'lastName', label: 'Last Name', type: 'text' }
     ];
-
-    // Build form group dynamically based on form fields
-    const formConfig = this.formFieldsConfig.reduce((acc, field) => {
-      acc[field.name] = ['', []];
-      return acc;
-    }, {} as Record<string, [string, ValidatorFn[]]>);
-
-    // Create the form group 
-    this.form = this.formBuilder.group(formConfig);
-
-    // ✅ Créer les signals dans un contexte d'injection
-    this.fieldsState = this.formFieldsConfig.map(f =>
-      runInInjectionContext(this.injector, () =>
-        toSignal(
-          this.formHelperProvider.createFormFieldErrorState(
-            this.form.get(f.name)!,
-            this.form
-          ),
-          {
-            initialValue: {
-              invalid: false,
-              showError: false,
-              errorMessage: ''
-            }
-          }
-        )
-      )
-    );
-    // ✅ Créer le signal combiné des champs avec leurs états
-    this.formFieldsState = computed(() =>
-      this.formFieldsConfig.map((f, i) => ({
-        ...f,
-        state: this.fieldsState[i]()
-      }))
-    );
   }
 
-
-/**
- *  Create field state for a given control name
- * @param controlName - The name of the form control
- * @returns Observable<FormFieldState>
- */
-createFormFieldErrorStateFor(controlName: string): Observable<FormFieldState> {
-  return this.formHelperProvider.createFormFieldErrorState(this.form.get(controlName)!,this.form);
-}
-
+  /** 
+   * Handle form ready event to get the FormGroup
+   * @param form The FormGroup emitted by DynamicForm
+   * @returns void
+   */
+  /*onFormReady(form: FormGroup) {
+    this.form = form; // Registration possède maintenant le FormGroup
+  }*/
+  
   /**
    * Handle form submission
    * @returns void
    */
   onSubmit() {
     
-    this.form.markAllAsTouched(); // Mark all fields as touched to show validation errors
-
-    if (this.form.invalid) {
-      return;
-    }
-
     const payload = this.userMapperProvider.fromForm(this.form).toPayload();
 
     this.registrationProvider.register(payload).subscribe({

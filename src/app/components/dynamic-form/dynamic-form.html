@@ -1,0 +1,28 @@
+<h1 class="text-center mt-6">{{ title }}</h1>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+  @for (field of formFieldsState(); track field.name) {
+    <div class="form-group">
+      <label [attr.for]="field.name">{{ field.label }}</label>
+
+      <input
+        class="form-control"
+        [id]="field.name"
+        [type]="field.type"
+        [formControlName]="field.name"
+        [attr.autocomplete]="field.autocomplete || null"
+        [ngClass]="{ 'is-invalid': field.state.showError }"
+      />
+
+      @if (field.state.showError) {
+        <div class="invalid-feedback">
+          {{ field.state.errorMessage }}
+        </div>
+      }
+    </div>
+  }
+
+  <button type="submit" class="btn btn-primary">{{ buttonLabel }}</button>
+</form>
+
