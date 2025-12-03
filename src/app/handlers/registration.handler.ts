@@ -4,7 +4,6 @@ import { HandlerInterface } from '../interfaces/handler.interface';
 import { NavigationHandlerProviderInterface } from '../tokens/global.token';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormGroup } from '@angular/forms';
-import { ValidationViolation } from '../interfaces/validation-violation.interface';
 
 @Injectable({ providedIn: 'root' })
 export class RegistrationHandler implements HandlerInterface {
@@ -27,29 +26,52 @@ export class RegistrationHandler implements HandlerInterface {
      */
     handleError(err: HttpErrorResponse, form: FormGroup): void {
 
-        // On nettoie d'abord toutes les erreurs existantes
+        // 1️⃣ On nettoie toutes les erreurs avant d'appliquer les nouvelles
         Object.keys(form.controls).forEach(key => {
             const control = form.get(key);
             if (control) control.setErrors(null);
         });
 
+        // 2️⃣ Gestion des erreurs 422 envoyées par API Platform
         if (err.status === 422 && err.error?.violations) {
-            err.error.violations.forEach((v: ValidationViolation) => {
-                const control = form.get(v.propertyPath);
-                if (!control) return; 
-
-                control.setErrors({ backend: v.message });
-
-                control.markAsTouched(); // Pour afficher l'erreur immédiatement
-                control.markAsDirty(); // Pour marquer le champ comme modifié
-                console.log("ERREURS DU CHAMP :", v.propertyPath, control.errors);
-            });
             
+            // Dictionnaire pour regrouper les erreurs par champ
+            const fieldErrors: Record<string, string[]> = {};
+
+            for (const violation of err.error.violations) {
+                const field = violation.propertyPath;
+
+                if (!fieldErrors[field]) {
+                    fieldErrors[field] = [];
+                }
+
+                fieldErrors[field].push(violation.message);
+            }
+
+            // Maintenant on applique UNE SEULE erreur par champ :
+            // toujours la première
+            Object.keys(fieldErrors).forEach(fieldName => {
+                const control = form.get(fieldName);
+                if (!control) return;
+
+                const firstError = fieldErrors[fieldName][0]; // 👉 ici tu contrôles la priorité
+
+                control.setErrors({ backend: firstError });
+                control.markAsTouched();
+                control.markAsDirty();
+
+                console.log("ERREUR RETENUE POUR LE CHAMP :", fieldName, firstError);
+            });
+
             return;
-        } 
-        
-        if (err.status >= 500) {
-            form.setErrors({ backend: "Une erreur interne est survenue. Réessayez plus tard." });
-        }
     }
+
+    // 3️⃣ Erreur serveur
+    if (err.status >= 500) {
+        form.setErrors({
+            backend: "Une erreur interne est survenue. Réessayez plus tard."
+        });
+    }
+}
+
 }
