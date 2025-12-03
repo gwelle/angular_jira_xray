@@ -30,29 +30,29 @@ export class FormHelperErrorService implements FormHelperErrorInterface {
    */
   createFormFieldErrorState$(control: AbstractControl, form: FormGroup): Observable<FormFieldState> {
     return defer (() => {
-    return merge(
-      control.statusChanges.pipe(startWith(control.status)), 
-      control.valueChanges.pipe(startWith(control.value), debounceTime(300))
-      ).pipe(
-        startWith(null), // Pour émettre la valeur initiale dès le chargement
-          map(() => { 
-            const controlName = Object.keys(form.controls).find(key => form.get(key) === control);
-            const error = controlName ? this.getErrorMessage(form, controlName) : '';
-            return {     
-              invalid: control.invalid,
-              showError: !!error && (control.dirty || control.touched || !!control.errors?.['backend']),
-              errorMessage: error ?? ''     
-            };     
-          }),
-          // Évite les recalculs inutiles
-          distinctUntilChanged((prev, curr) =>
-            prev.invalid === curr.invalid &&
-            prev.showError === curr.showError &&
-            prev.errorMessage === curr.errorMessage   
-          ),
-          // 🛡 évite les doubles souscriptions dans tes templates
-          shareReplay({ bufferSize: 1, refCount: true })
-      );
-    });
+      return merge(
+        control.statusChanges.pipe(startWith(control.status)), 
+        control.valueChanges.pipe(startWith(control.value), debounceTime(300))
+        ).pipe(
+          startWith(null), // Pour émettre la valeur initiale dès le chargement
+            map(() => { 
+              const controlName = Object.keys(form.controls).find(key => form.get(key) === control);
+              const error = controlName ? this.getErrorMessage(form, controlName) : '';
+              return {     
+                invalid: control.invalid,
+                showError: !!error && (control.dirty || control.touched || !!control.errors?.['backend']),
+                errorMessage: error ?? ''     
+              };     
+            }),
+            // Évite les recalculs inutiles
+            distinctUntilChanged((prev, curr) =>
+              prev.invalid === curr.invalid &&
+              prev.showError === curr.showError &&
+              prev.errorMessage === curr.errorMessage   
+            ),
+            // 🛡 évite les doubles souscriptions dans tes templates
+            shareReplay({ bufferSize: 1, refCount: true })
+        );
+      });
   }
 }

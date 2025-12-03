@@ -63,22 +63,13 @@ export class Registration implements OnInit, CustomFormInterface {
       { name: 'lastName', label: 'Last Name', type: 'text' }
     ];
   }
-
-  /** 
-   * Handle form ready event to get the FormGroup
-   * @param form The FormGroup emitted by DynamicForm
-   * @returns void
-   */
-  /*onFormReady(form: FormGroup) {
-    this.form = form; // Registration possède maintenant le FormGroup
-  }*/
   
   /**
    * Handle form submission
    * @returns void
    */
   onSubmit() {
-    
+
     const payload = this.userMapperProvider.fromForm(this.form).toPayload();
 
     this.registrationProvider.register(payload).subscribe({

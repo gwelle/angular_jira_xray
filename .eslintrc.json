@@ -3,10 +3,14 @@
   "overrides": [
     {
       "files": ["*.ts"],
-      "plugins": ["rxjs", "@angular-eslint"],
-      "extends": ["plugin:@angular-eslint/recommended", "plugin:rxjs/recommended"],
+      "plugins": ["@typescript-eslint","rxjs", "@angular-eslint"],
+      "extends": ["plugin:@angular-eslint/recommended",
+                  "plugin:@typescript-eslint/recommended",
+                  "plugin:rxjs/recommended"
+                ],
       "rules": {
-        "rxjs/no-ignored-subscription": "warn"
+        "rxjs/no-ignored-subscription": "warn",
+        "@typescript-eslint/adjacent-overload-signatures": "off"
       }
     }
   ]

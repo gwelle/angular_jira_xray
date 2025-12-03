@@ -1,17 +1,13 @@
-import { Component, inject, OnInit, Signal } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormHelperProviderInterface } from '../../tokens/global.token';
+import { FormHelperErrorProviderInterface } from '../../tokens/global.token';
 import { ResendConfirmationEmailService } from '../../services/resend-confirmation-email.service';
 import { ResendConfirmationEmailProviderInterface } from '../../tokens/resend-confirmation-email.token';
 import { HandlerProviderInterface } from '../../tokens/resend-confirmation-email.token';
 import { ResendConfirmationEmailHandler } from '../../handlers/resend-confirmation-email.handler';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { FormCustomInterface } from '../../interfaces/form-custom.interface';
-import { FormFieldState } from '../../interfaces/form-field-state.interface';
-import { FormFieldConfig } from '../../interfaces/form-field-config.interface';
-import { FormField } from '../../interfaces/form-field.interface';
+import { CustomFormInterface } from '../../interfaces/custom-form.interface';
 
 @Component({
   selector: 'app-resend-confirmation-email',
@@ -23,35 +19,22 @@ import { FormField } from '../../interfaces/form-field.interface';
   ],
   templateUrl: './resend-confirmation-email.html'
 })
-export class ResendConfirmationEmail implements OnInit, FormCustomInterface {
+export class ResendConfirmationEmail implements OnInit, CustomFormInterface {
 
   form!: FormGroup;
   submitted = false;
-  private readonly formHelperProvider = inject(FormHelperProviderInterface);
+  private readonly formHelperErrorProvider = inject(FormHelperErrorProviderInterface);
   private readonly resendConfirmationEmailProvider = inject(ResendConfirmationEmailProviderInterface);
   private readonly handlerProvider = inject(HandlerProviderInterface);
   readonly formBuilder = inject(FormBuilder);
   readonly router = inject(Router);
-  submitted$ = new BehaviorSubject<boolean>(false);
-  // ✅ Tableau de Signals individuels
-  fieldsState!: Signal<FormFieldState>[]
-  // ✅ Signal combiné contenant tous les champs avec leurs états
-  formFieldsState!: Signal<FormField[]>;
-  // ✅ Configuration des champs du formulaire
-  formFieldsConfig!: FormFieldConfig[];
+ 
 
   ngOnInit(): void {
     this.form = this.formBuilder.group({
       email: ['', [Validators.required,
         Validators.pattern(/^[a-zA-Z0-9]+([._%+-]?[a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/)]]
     });
-  }
-
-  /** 
-   * constructor
-   */
-  constructor() {
-    this.ngOnInit();
   }
 
   onSubmit() {
@@ -69,13 +52,4 @@ export class ResendConfirmationEmail implements OnInit, FormCustomInterface {
     }
   }
 
-  /**
-   * Create form field error state observable
-   * @param controlName Name of the form control
-   * @returns Observable of FormFieldState
-   */
-  createFormFieldErrorStateFor(controlName: string): Observable<FormFieldState>{
-    return this.formHelperProvider.createFormFieldErrorState(this.form.get(controlName)!, this.form);
-  }
-  
 }

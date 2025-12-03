@@ -8,7 +8,8 @@ import { FormField } from '../../interfaces/form-field.interface';
   selector: 'app-dynamic-form',
   imports: [ReactiveFormsModule, CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './dynamic-form.html'
+  templateUrl: './dynamic-form.html',
+  styleUrls: ['./dynamic-form.css']
 })
 export class DynamicForm {
 
@@ -17,12 +18,7 @@ export class DynamicForm {
   @Input() title = '';
   @Input() buttonLabel = 'Valider';
   
-  //@Output() formReady = new EventEmitter<FormGroup>();
   @Output() submitted = new EventEmitter<void>();
-
-  /*ngOnInit(): void {
-    this.formReady.emit(this.form);
-  }*/
 
   onSubmit(): void {
     // Montre toutes les erreurs
