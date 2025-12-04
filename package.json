@@ -7,9 +7,7 @@
     "start:https": "ng serve --ssl true --ssl-cert ssl/localhost.crt --ssl-key ssl/localhost.key --open",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test": "ng test",
     "lint": "ng lint"
   },
   "prettier": {
