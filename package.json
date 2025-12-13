@@ -1,6 +1,7 @@
 {
   "name": "angular-jira-xray",
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --open",
@@ -32,27 +33,22 @@
     "@angular/router": "^20.1.0",
     "bootstrap": "^5.3.8",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "zone.js": "^0.15.1"
   },
   "devDependencies": {
-    "@angular-eslint/eslint-plugin": "^20.4.0",
     "@angular/build": "^20.1.6",
     "@angular/cli": "^20.1.6",
     "@angular/compiler-cli": "^20.1.0",
     "@types/jasmine": "~5.1.0",
-    "@types/jest": "^30.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.46.4",
-    "@typescript-eslint/parser": "^8.46.4",
     "angular-eslint": "20.4.0",
     "autoprefixer": "^10.4.22",
-    "eslint": "^9.38.0",
+    "eslint": "^9.37.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsdoc": "^61.1.5",
     "eslint-plugin-prettier": "^5.5.4",
     "jasmine-core": "~5.8.0",
-    "jest": "^30.2.0",
-    "jest-preset-angular": "^15.0.3",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
