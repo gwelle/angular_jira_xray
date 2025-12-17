@@ -1,6 +1,6 @@
 import { UserMapper } from './user-mapper';
 import { FormBuilder, FormGroup } from "@angular/forms";
-import { randomEmail, randomString, randomPasswordPair } from '../random-testing-utils';
+import { createFakeForm} from '../random-testing-utils';
 import { UserPayload } from '../interfaces/user-payload.interface';
 
 describe('UserMapper', () => {
@@ -9,18 +9,6 @@ describe('UserMapper', () => {
   let formBuilder: FormBuilder;
   let fakeForm: FormGroup;
   let payload: UserPayload;
-
-  // Helper function to create a fake form with random data
-  const createFakeForm = () => { 
-  const { plainPassword, confirmationPassword } = randomPasswordPair();
-    return formBuilder.group({
-    email: randomEmail(),
-    plainPassword: plainPassword,
-    confirmationPassword: confirmationPassword,
-    firstName: randomString(),
-    lastName: randomString(),
-    });
-  };
 
   /**
    * Map form to user payload
@@ -104,7 +92,7 @@ describe('UserMapper', () => {
   it('should throw an error if form is not a FormGroup instance', () => {
     // Arrange
     const invalidForm: any = {
-      get: (controlName: string) => ({ value: 'test' })
+      get: () => ({ value: 'test' })
     };
 
     // Act & Assert

@@ -1,3 +1,5 @@
+import { FormBuilder } from "@angular/forms";
+
 /**
  * Génère une chaîne de caractères aléatoire  (ex : "aZxYbCdE")
  * @param {*} length 
@@ -76,4 +78,20 @@ export function randomPasswordPair(length: any = 8) {
   }
 
   return pair;
+}
+
+/**
+ * Crée un formulaire réactif avec des données utilisateur aléatoires
+ * @returns FormGroup
+ */
+export function createFakeForm() { 
+  const formBuilder = new FormBuilder();
+  const { plainPassword, confirmationPassword } = randomPasswordPair();
+  return formBuilder.group({
+    email: randomEmail(),
+    plainPassword: plainPassword,
+    confirmationPassword: confirmationPassword,
+    firstName: randomString(),
+    lastName: randomString(),
+  }); 
 }

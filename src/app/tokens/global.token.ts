@@ -2,7 +2,7 @@
 import { InjectionToken } from '@angular/core';
 
 import { FormHelperErrorService } from '../services/form-helper-error.service';
-import { FormHelperErrorInterface } from '../interfaces/fom-helper-error.interface';
+import { FormHelperErrorInterface } from '../interfaces/form-helper-error.interface';
 
 import { NavigationInterface } from '../interfaces/navigation.interface';
 import { NavigationService } from '../services/navigation.service';
