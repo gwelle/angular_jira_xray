@@ -22,7 +22,7 @@ export class DynamicForm {
 
   onSubmit(): void {
     // Montre toutes les erreurs
-    this.form.markAllAsTouched();
+    //this.form.markAllAsTouched();
 
     // Si formulaire invalide, ne pas notifier Registration
     if (this.form.invalid) return;

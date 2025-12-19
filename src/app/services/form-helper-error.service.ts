@@ -1,9 +1,9 @@
 
-import { AbstractControl, FormGroup } from '@angular/forms';
+import { AbstractControl } from '@angular/forms';
 import { Injectable } from '@angular/core';
 import { FormHelperErrorInterface } from '../interfaces/form-helper-error.interface';
 import { FormFieldState } from '../interfaces/form-field-state.interface';
-import { distinctUntilChanged, map, merge, Observable, shareReplay, startWith, defer, tap } from 'rxjs';
+import { distinctUntilChanged, map, merge, Observable, shareReplay, startWith, defer } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -22,14 +22,8 @@ export class FormHelperErrorService implements FormHelperErrorInterface {
     }
     return defer (() => {
       return merge(
-        control.statusChanges.pipe(
-          startWith(control.status),
-          tap(status => console.log('[STATUS CHANGE]', status))
-        ), 
-        control.valueChanges.pipe(
-          startWith(control.value),
-          tap(value => console.log('[VALUE CHANGE]', value))
-        ),
+        control.statusChanges.pipe(startWith(control.status)), 
+        control.valueChanges.pipe(startWith(control.value)),
         control.valueChanges.pipe(map(() => control.errors)), // ← capte erreurs backend
         defer(() => [control.errors]) // ← émet l’erreur initiale dès que l’Observable est souscrit
       ).pipe(
@@ -42,7 +36,7 @@ export class FormHelperErrorService implements FormHelperErrorInterface {
             return {     
               invalid: control.invalid,
               showError: !!error && (control.touched || control.dirty || !!control.errors?.['backend']),
-              errorMessage: error    
+              errorMessage: error 
             };     
           }),
           
@@ -52,8 +46,6 @@ export class FormHelperErrorService implements FormHelperErrorInterface {
             prev.showError === curr.showError &&
             prev.errorMessage === curr.errorMessage
           ),
-          tap(state => console.log('STATE EMIT:', state, 'ERRORS:', control.errors, 
-            'touched:', control.touched, 'dirty:', control.dirty, 'pristine:', control.pristine)),
 
           // 🛡 évite les doubles souscriptions dans tes templates
           shareReplay({ bufferSize: 1, refCount: true })

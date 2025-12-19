@@ -1,12 +1,12 @@
-import { FormBuilder } from "@angular/forms";
+import { AbstractControl, FormBuilder, FormGroup } from "@angular/forms";
 
 /**
  * Génère une chaîne de caractères aléatoire  (ex : "aZxYbCdE")
  * @param {*} length 
  * @param {*} charset 
- * @returns 
+ * @returns string
  */
-export function randomString(length: any = 8, charset: any = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') {
+export function randomString(length: any = 8, charset: any = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'): string {
   let str = '';
   for (let i = 0; i < length; i++) {
     str += charset.charAt(Math.floor(Math.random() * charset.length));
@@ -17,9 +17,9 @@ export function randomString(length: any = 8, charset: any = 'abcdefghijklmnopqr
 /**
  * Génère un email unique (ex : "qsdfrt.abcd123@gmail.com") 
  * @param {*} domain 
- * @returns 
+ * @returns string
  */
-export function randomEmail(domain: any = 'gmail.com') {
+export function randomEmail(domain: any = 'gmail.com'): string {
   const local = randomString(6).toLowerCase();
   const uniq = Math.random().toString(36).substring(2, 10); // suffixe unique
   return `${local}.${uniq}@${domain}`;
@@ -29,9 +29,9 @@ export function randomEmail(domain: any = 'gmail.com') {
  * Génère un mot de passe robuste (ex : "Xy8$trQ!mn2")
  * @param {*} minLength 
  * @param {*} maxLength 
- * @returns 
+ * @returns string
  */
-export function randomPassword(minLength: any = 8, maxLength: any = 15) {
+export function randomPassword(minLength: any = 8, maxLength: any = 15) : string {
   const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const lower = 'abcdefghijklmnopqrstuvwxyz';
   const digits = '0123456789';
@@ -56,9 +56,9 @@ export function randomPassword(minLength: any = 8, maxLength: any = 15) {
 /**
  * Génère un couple mot de passe + confirmation
  * @param {*} length 
- * @returns 
+ * @returns { plainPassword: string; confirmationPassword: string }
  */
-export function randomPasswordPair(length: any = 8) {
+export function randomPasswordPair(length: any = 8) : { plainPassword: string; confirmationPassword: string } {
 
   const pwd = randomPassword(length);
 
@@ -84,7 +84,7 @@ export function randomPasswordPair(length: any = 8) {
  * Crée un formulaire réactif avec des données utilisateur aléatoires
  * @returns FormGroup
  */
-export function createFakeForm() { 
+export function createFakeForm() : FormGroup { 
   const formBuilder = new FormBuilder();
   const { plainPassword, confirmationPassword } = randomPasswordPair();
   return formBuilder.group({
@@ -94,4 +94,24 @@ export function createFakeForm() {
     firstName: randomString(),
     lastName: randomString(),
   }); 
+}
+
+/** 
+ * Récupère un contrôle de formulaire par son nom
+ * @param form 
+ * @param controlName 
+ * @returns AbstractControl
+ */
+export function getControl(form: any, controlName: string) : AbstractControl {
+  return form.get(controlName) as AbstractControl;
+}
+
+/** 
+ * Définit une erreur backend sur un contrôle de formulaire
+ * @param control 
+ * @param errorMessage 
+ * @returns void
+ */
+export function setBackendError(control: AbstractControl, errorMessage: string): void {
+  control.setErrors({ backend: errorMessage });
 }
