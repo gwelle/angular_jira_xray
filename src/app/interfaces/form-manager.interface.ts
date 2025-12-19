@@ -1,6 +1,6 @@
 import { FormGroup } from "@angular/forms";
 import { FormFieldConfig } from "./form-field-config.interface";
-import { FormHelperErrorInterface } from "./fom-helper-error.interface";
+import { FormHelperErrorInterface } from "./form-helper-error.interface";
 import { Signal } from "@angular/core";
 import { FormFieldState } from "./form-field-state.interface";
 import { FormField } from "./form-field.interface";

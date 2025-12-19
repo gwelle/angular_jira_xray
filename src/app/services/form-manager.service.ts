@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, Injector, runInInjectionContext, Signal } from "@angular/core";
 import { FormManagerInterface } from "../interfaces/form-manager.interface";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { FormBuilder, FormGroup, ValidatorFn } from "@angular/forms";
+import { FormBuilder, FormControl, FormGroup, ValidatorFn } from "@angular/forms";
 import { FormFieldConfig } from "../interfaces/form-field-config.interface";
 import { FormHelperErrorProviderInterface } from "../tokens/global.token";
 import { FormFieldState } from "../interfaces/form-field-state.interface";
@@ -23,13 +23,25 @@ export class FormManagerService implements FormManagerInterface {
      * @returns FormGroup
      */
     buildForm(formFieldsConfig: FormFieldConfig[]): FormGroup {
-      
+
+      if(!formFieldsConfig || formFieldsConfig.length === 0) {
+        throw new Error('Form fields configuration is required to build the form.');
+      }
+
       // Build form group dynamically based on form fields
-      const formConfig = formFieldsConfig.reduce((acc, field) => {
-        acc[field.name] = ['', [] as ValidatorFn[]];
-        return acc;
-      }, {} as Record<string, [string, ValidatorFn[]]>);
-  
+      const formConfig: Record<string, FormControl> = {};
+
+      formFieldsConfig.forEach(field => {
+        formConfig[field.name] = this.formBuilder.control(
+          '',
+          {
+            validators: field.validators || [],
+            asyncValidators: [],
+            updateOn: field.updateOn || 'change'
+          }
+        );
+      });
+
       // Create the form group 
       return this.formBuilder.group(formConfig);
     }
@@ -42,11 +54,12 @@ export class FormManagerService implements FormManagerInterface {
      */
     initializeFieldStates(form: FormGroup, formFieldsConfig: FormFieldConfig[]): Signal<FormFieldState>[] {
   
+      //console.log('With form fields configuration:', formFieldsConfig);
       // ✅ Créer les signals dans un contexte d'injection
       return formFieldsConfig.map(f =>
         runInInjectionContext(this.injector, () =>
           toSignal(
-            this.formHelperErrorProvider.createFormFieldErrorState$(form.get(f.name)!,form),
+            this.formHelperErrorProvider.createFormFieldErrorState$(form.get(f.name)!),
             {
               initialValue: {
                 invalid: false,
