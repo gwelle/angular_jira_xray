@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./tests",
+    "types": ["node", "mocha"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "esModuleInterop": true
+  },
+  "include": [
+    "tests/e2e/**/*.ts",
+    "tests/support/**/*.ts"
+  ]
+}
