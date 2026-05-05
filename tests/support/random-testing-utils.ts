@@ -18,7 +18,7 @@ export function randomString(length: any = 8, charset: any = 'abcdefghijklmnopqr
  * @param {*} length 
  * @returns 
  */
-export function randomFirstName(length = 6) {
+export function randomFirstName(length: any = 6) {
   const name = randomString(length).toLowerCase();
   return name.charAt(0).toUpperCase() + name.slice(1);
 }
@@ -28,7 +28,7 @@ export function randomFirstName(length = 6) {
  * @param {*} length 
  * @returns 
  */
-export function randomLastName(length = 8) {
+export function randomLastName(length: any = 8) {
   const name = randomString(length).toLowerCase();
   return name.charAt(0).toUpperCase() + name.slice(1);
 }

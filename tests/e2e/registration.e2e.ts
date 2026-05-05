@@ -1,68 +1,131 @@
 /// <reference types="mocha" />
 
-console.log('Running registration.e2e.ts tests...');
-
-import { Builder, By, until, WebDriver } from 'selenium-webdriver';
-import { Options } from 'selenium-webdriver/chrome.js';
+import { By, until, WebDriver, WebElement } from 'selenium-webdriver';
 import assert from "assert";
 import {randomFirstName, randomLastName, randomEmail, randomPasswordPair} from '../support/random-testing-utils.ts';
+import { buildDriver, quitDriver } from '../support/driver.ts';
+import { openRegistrationPage, loadFormElements, fillFormElements, clickSubmitButton} from '../actions/registration.action.ts';
+import type { RegistrationFormLocators, RegistrationFormValues } from '../actions/registration.action.ts';
+
+const REGISTRATION_URL = process.env['REGISTRATION_URL'];
+const LOGIN_URL = process.env['LOGIN_URL'];
+const E2E_EXISTING_EMAIL = process.env['E2E_EXISTING_EMAIL'];
+const E2E_INVALID_EMAIL = process.env['E2E_INVALID_EMAIL'];
+let driver: WebDriver;
+let registrationFormLocators: RegistrationFormLocators;
+let registrationFormElements: RegistrationFormValues;
+
+let elements : Record<string, WebElement> = {};
+/**
+ * Helper function to set up the WebDriver and environment variables
+ * @returns {Promise<void>} A promise that resolves when the setup is complete
+ * @throws {Error} If REGISTRATION_URL or LOGIN_URL is not defined
+ */
+async function setUp(): Promise<void> {
+  if (!REGISTRATION_URL || !LOGIN_URL) {
+      throw new Error('REGISTRATION_URL or LOGIN_URL is not defined');
+  }
+}
+
+/**
+ * Helper function to check if an element is displayed
+ * @param element The WebElement to check
+ * @returns A promise that resolves to true if the element is displayed, false otherwise
+ */
+async function isElementDisplayed(element: WebElement): Promise<boolean> {
+  const isDisplayed = await element.isDisplayed();
+  return isDisplayed;
+}
+
+/**
+ * Helper function to load the error message element
+ * @param time The maximum time to wait for the element to be located
+ * @returns A promise that resolves to the located WebElement
+ */
+async function loadErrorMessage(time: number): Promise<WebElement> {
+  return await driver.wait(until.elementLocated(By.css('.invalid-feedback')), time);
+}
 
 describe('registration with success', function() {
 
-  let driver: WebDriver;
-  let options: Options;
-  const REGISTRATION_URL = process.env['REGISTRATION_URL'];
-  const LOGIN_URL = process.env['LOGIN_URL'];
-
-  // Arrangement: Set up the WebDriver and environment variables
+  // Arrangement
   before(async () => {
-    if (!REGISTRATION_URL || !LOGIN_URL) {
-      throw new Error('REGISTRATION_URL or LOGIN_URL is not defined');
-    }
+    await setUp();
+    registrationFormLocators = {
+      email: By.id('email'),
+      plainPassword: By.id('plainPassword'),
+      confirmationPassword: By.id('confirmationPassword'),
+      firstName: By.id('firstName'),
+      lastName: By.id('lastName'),
+      button: By.css('button[type="submit"]')
+    };
 
-    options = new Options();
-    options.setPageLoadStrategy('eager');
-    options.setAcceptInsecureCerts(true);
+    const { plainPassword, confirmationPassword } = randomPasswordPair();
+    registrationFormElements = {
+      email: randomEmail(),
+      plainPassword: plainPassword,
+      confirmationPassword: confirmationPassword,
+      firstName: randomFirstName(),
+      lastName: randomLastName(),
+     };
+  });
 
-    driver = await new Builder()
-      .forBrowser('chrome')
-      .setChromeOptions(options)
-      .build();
+  beforeEach(async () => {
+    driver = await buildDriver({browser: 'chrome', headless: false});
+    await openRegistrationPage(driver, REGISTRATION_URL!);
+    elements = await loadFormElements(driver, registrationFormLocators, 20000);    
+  });
+
+  afterEach(async () => {
+    await driver.wait(async () => {
+      const readyState = await driver.executeScript("return document.readyState");
+      return readyState === "complete";
+    }, 20000);
+
+    await quitDriver();
   });
 
   it('should register a new user successfully', async () => {
-    
-    // ACTION: Fill out the registration form and submit
-    await driver.get(REGISTRATION_URL!);
-   
-    const emailInput = await driver.wait(until.elementLocated(By.id('email')), 5000);
-    const passwordInput = await driver.wait(until.elementLocated(By.id('plainPassword')), 5000);
-    const confirmationPasswordInput = await driver.wait(until.elementLocated(By.id('confirmationPassword')), 5000);
-    const firstNameInput = await driver.wait(until.elementLocated(By.id('firstName')), 5000);
-    const lastNameInput = await driver.wait(until.elementLocated(By.id('lastName')), 5000);
-    const submitButton = await driver.wait(until.elementLocated(By.css('button[type="submit"]')), 5000);
 
-    const { plainPassword, confirmationPassword } = randomPasswordPair();
+    // Act
+    await fillFormElements(elements, registrationFormElements);
+    await clickSubmitButton(elements["button"]!);
 
-    await emailInput.sendKeys(randomEmail());
-    await passwordInput.sendKeys(plainPassword);
-    await confirmationPasswordInput.sendKeys(confirmationPassword);
-    await firstNameInput.sendKeys(randomFirstName());
-    await lastNameInput.sendKeys(randomLastName());
-
-    await submitButton.click();
-
-    // IMPLICIT ASSERT: Verify that the user is redirected to the login page
-    await driver.wait(until.urlIs(LOGIN_URL!), 10000);
+    // Assert: Verify that the user is redirected to the login page and the email input is visible
+    await driver.wait(until.urlIs(LOGIN_URL!), 20000);
     const emailInputLogin = await driver.findElement(By.id('email'));
-    const isVisible = await emailInputLogin.isDisplayed();
+    const isVisible = await isElementDisplayed(emailInputLogin);
     assert.strictEqual(isVisible, true);
   });
 
-  after(async () => {
-    /*if (driver) {
-      await driver.quit();
-    }*/
+  it('should not register a new user successfully because email already exists', async () => {
+    const existingEmail = E2E_EXISTING_EMAIL;
+    registrationFormElements.email = existingEmail;
+    await fillFormElements(elements, registrationFormElements);
+    await clickSubmitButton(elements["button"]!);
+
+    // Assert: Verify that the user is not redirected to the login page and an error message is displayed
+    await driver.wait(until.urlContains('/registration'), 20000);
+    const errorMessage = await loadErrorMessage(10000);
+    const isDisplayed = await isElementDisplayed(errorMessage);
+    assert.strictEqual(isDisplayed, true);
 
   });
+
+  it('should not register a new user successfully because invalid email', async () => {
+
+    // Act
+    const invalidEmail = E2E_INVALID_EMAIL;
+    registrationFormElements.email = invalidEmail;
+    await fillFormElements(elements, registrationFormElements);
+    await clickSubmitButton(elements["button"]!);
+
+    // Assert: Verify that the user is not redirected to the login page and an error message is displayed
+    await driver.wait(until.urlContains('/registration'), 20000);
+    const errorMessage = await loadErrorMessage(10000);
+    const isDisplayed = await isElementDisplayed(errorMessage);
+    assert.strictEqual(isDisplayed, true);
+
+  });
+
 });

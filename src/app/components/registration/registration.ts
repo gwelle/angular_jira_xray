@@ -72,6 +72,9 @@ export class Registration implements OnInit, CustomFormInterface {
 
     const payload = this.userMapperProvider.fromForm(this.form).toPayload();
 
+    //Success message send avec handleRespsonse/ Optional params
+    // Création de votre compte utilisateur avec succè
+
     this.registrationProvider.register(payload).subscribe({
       next: () => this.handlerProvider.handleResponse(),
       error: (err) => this.handlerProvider.handleError(err, this.form)

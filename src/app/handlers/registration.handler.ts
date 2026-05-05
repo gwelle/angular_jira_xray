@@ -72,6 +72,5 @@ export class RegistrationHandler implements HandlerInterface {
             backend: "Une erreur interne est survenue. Réessayez plus tard."
         });
     }
-}
-
+ }
 }

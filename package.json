@@ -9,7 +9,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "test:e2e": "TS_NODE_PROJECT=tsconfig.e2e.json NODE_OPTIONS=--loader=ts-node/esm mocha \"tests/e2e/**/*.e2e.ts\" --timeout 30000",
+    "test:e2e": "set -a; [ -f .env.e2e ] && . ./.env.e2e; set +a; TS_NODE_PROJECT=tsconfig.e2e.json NODE_OPTIONS=--loader=ts-node/esm mocha \"tests/e2e/**/*.e2e.ts\" --timeout 30000",
     "lint": "ng lint"
   },
   "prettier": {
